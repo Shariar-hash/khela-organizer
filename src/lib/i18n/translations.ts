@@ -1,0 +1,446 @@
+export const translations = {
+  en: {
+    // Common
+    common: {
+      loading: "Loading...",
+      save: "Save",
+      cancel: "Cancel",
+      delete: "Delete",
+      edit: "Edit",
+      create: "Create",
+      submit: "Submit",
+      search: "Search",
+      back: "Back",
+      next: "Next",
+      confirm: "Confirm",
+      copy: "Copy",
+      copied: "Copied!",
+      share: "Share",
+      logout: "Logout",
+      login: "Login",
+      signup: "Sign Up",
+      or: "or",
+      noData: "No data available",
+      error: "Something went wrong",
+      success: "Success!",
+      welcome: "Welcome",
+      viewAll: "View All",
+      seeMore: "See More",
+    },
+
+    // Navigation
+    nav: {
+      home: "Home",
+      dashboard: "Dashboard",
+      tournaments: "Tournaments",
+      profile: "Profile",
+      settings: "Settings",
+      teams: "Teams",
+      players: "Players",
+      announcements: "Announcements",
+      docs: "Documentation",
+    },
+
+    // Auth
+    auth: {
+      loginTitle: "Welcome Back",
+      loginSubtitle: "Enter your phone number to continue",
+      signupTitle: "Create Account",
+      signupSubtitle: "Join us to organize and participate in tournaments",
+      phoneNumber: "Phone Number",
+      playerName: "Your Name",
+      enterOtp: "Enter OTP",
+      otpSent: "OTP sent to your phone",
+      verifyOtp: "Verify OTP",
+      resendOtp: "Resend OTP",
+      phoneRequired: "Phone number is required",
+      nameRequired: "Name is required",
+      invalidOtp: "Invalid OTP",
+      newUser: "New here?",
+      existingUser: "Already have an account?",
+    },
+
+    // Dashboard
+    dashboard: {
+      title: "Dashboard",
+      myTournaments: "My Tournaments",
+      joinedTournaments: "Joined Tournaments",
+      recentAnnouncements: "Recent Announcements",
+      quickActions: "Quick Actions",
+      createTournament: "Create Tournament",
+      joinTournament: "Join Tournament",
+      noTournaments: "No tournaments yet",
+      startFirst: "Create your first tournament or join one!",
+    },
+
+    // Tournament
+    tournament: {
+      create: "Create Tournament",
+      join: "Join Tournament",
+      name: "Tournament Name",
+      description: "Description",
+      code: "Tournament Code",
+      enterCode: "Enter Tournament Code",
+      joinWithCode: "Join with Code",
+      copyCode: "Copy Code",
+      shareCode: "Share Code",
+      startDate: "Start Date",
+      endDate: "End Date",
+      maxPlayers: "Maximum Players",
+      created: "Tournament created successfully!",
+      joined: "Successfully joined the tournament!",
+      invalidCode: "Invalid tournament code",
+      alreadyJoined: "You have already joined this tournament",
+      tournamentDetails: "Tournament Details",
+      manageTournament: "Manage Tournament",
+      viewTournament: "View Tournament",
+      players: "Players",
+      teams: "Teams",
+      admin: "Admin",
+      creator: "Creator",
+      active: "Active",
+      inactive: "Inactive",
+    },
+
+    // Teams
+    teams: {
+      title: "Teams",
+      createTeam: "Create Team",
+      teamName: "Team Name",
+      selectPlayers: "Select Players",
+      assignPlayers: "Assign Players",
+      removePlayer: "Remove Player",
+      captain: "Captain",
+      viceCaptain: "Vice Captain",
+      player: "Player",
+      manualMethod: "Manual Assignment",
+      randomMethod: "Random Distribution",
+      advancedRandom: "Advanced Random",
+      numberOfTeams: "Number of Teams",
+      distributeEvenly: "Distribute Evenly",
+      selectCategory: "Select Category",
+      categoryRules: "Category Rules",
+      minPerTeam: "Minimum per Team",
+      maxPerTeam: "Maximum per Team",
+      generateTeams: "Generate Teams",
+      teamsGenerated: "Teams generated successfully!",
+      noTeams: "No teams created yet",
+    },
+
+    // Players
+    players: {
+      title: "Players",
+      addPlayer: "Add Player",
+      removePlayer: "Remove Player",
+      playerList: "Player List",
+      searchPlayers: "Search players...",
+      category: "Category",
+      assignCategory: "Assign Category",
+      noPlayers: "No players in this tournament",
+      invitePlayers: "Invite players using the tournament code",
+      playerCount: "player(s)",
+    },
+
+    // Categories
+    categories: {
+      title: "Player Categories",
+      create: "Create Category",
+      name: "Category Name",
+      description: "Description",
+      premiumBowler: "Premium Bowler",
+      batsman: "Batsman",
+      allRounder: "All Rounder",
+      beginner: "Beginner",
+      wicketKeeper: "Wicket Keeper",
+    },
+
+    // Announcements
+    announcements: {
+      title: "Announcements",
+      create: "Create Announcement",
+      postTitle: "Title",
+      content: "Content",
+      type: "Type",
+      announcement: "Announcement",
+      matchInfo: "Match Info",
+      image: "Image",
+      jersey: "Jersey Design",
+      pinned: "Pinned",
+      pin: "Pin",
+      unpin: "Unpin",
+      uploadImage: "Upload Image",
+      noAnnouncements: "No announcements yet",
+    },
+
+    // Logo Generator
+    logo: {
+      title: "Logo Generator",
+      generateLogo: "Generate Logo",
+      enterPrompt: "Enter a prompt for logo generation",
+      promptPlaceholder: "e.g., A cricket tournament logo with golden trophy",
+      generating: "Generating logo...",
+      generated: "Logo generated!",
+      useAsLogo: "Use as Tournament Logo",
+      regenerate: "Regenerate",
+      autoGenerate: "Generate from tournament name",
+    },
+
+    // Profile
+    profile: {
+      title: "Profile",
+      editProfile: "Edit Profile",
+      myTournaments: "My Tournaments",
+      myTeams: "My Teams",
+      memberSince: "Member since",
+      tournamentsJoined: "Tournaments Joined",
+      tournamentsCreated: "Tournaments Created",
+    },
+
+    // Admin
+    admin: {
+      title: "Admin Panel",
+      addAdmin: "Add Admin",
+      removeAdmin: "Remove Admin",
+      adminList: "Admin List",
+      permissions: "Permissions",
+      manageTeams: "Manage Teams",
+      managePlayers: "Manage Players",
+      makeAnnouncements: "Make Announcements",
+    },
+
+    // Errors
+    errors: {
+      required: "This field is required",
+      invalidPhone: "Please enter a valid phone number",
+      networkError: "Network error. Please try again.",
+      unauthorized: "You are not authorized to perform this action",
+      notFound: "Not found",
+    },
+  },
+
+  bn: {
+    // Common
+    common: {
+      loading: "লোড হচ্ছে...",
+      save: "সংরক্ষণ",
+      cancel: "বাতিল",
+      delete: "মুছুন",
+      edit: "সম্পাদনা",
+      create: "তৈরি করুন",
+      submit: "জমা দিন",
+      search: "খুঁজুন",
+      back: "পেছনে",
+      next: "পরবর্তী",
+      confirm: "নিশ্চিত করুন",
+      copy: "কপি",
+      copied: "কপি হয়েছে!",
+      share: "শেয়ার",
+      logout: "লগ আউট",
+      login: "লগ ইন",
+      signup: "সাইন আপ",
+      or: "অথবা",
+      noData: "কোন তথ্য নেই",
+      error: "কিছু ভুল হয়েছে",
+      success: "সফল!",
+      welcome: "স্বাগতম",
+      viewAll: "সব দেখুন",
+      seeMore: "আরো দেখুন",
+    },
+
+    // Navigation
+    nav: {
+      home: "হোম",
+      dashboard: "ড্যাশবোর্ড",
+      tournaments: "টুর্নামেন্ট",
+      profile: "প্রোফাইল",
+      settings: "সেটিংস",
+      teams: "দল",
+      players: "খেলোয়াড়",
+      announcements: "ঘোষণা",
+      docs: "ডকুমেন্টেশন",
+    },
+
+    // Auth
+    auth: {
+      loginTitle: "স্বাগতম",
+      loginSubtitle: "চালিয়ে যেতে আপনার ফোন নম্বর দিন",
+      signupTitle: "অ্যাকাউন্ট তৈরি করুন",
+      signupSubtitle: "টুর্নামেন্ট সংগঠিত করতে এবং অংশ নিতে আমাদের সাথে যোগ দিন",
+      phoneNumber: "ফোন নম্বর",
+      playerName: "আপনার নাম",
+      enterOtp: "OTP দিন",
+      otpSent: "আপনার ফোনে OTP পাঠানো হয়েছে",
+      verifyOtp: "OTP যাচাই করুন",
+      resendOtp: "আবার OTP পাঠান",
+      phoneRequired: "ফোন নম্বর আবশ্যক",
+      nameRequired: "নাম আবশ্যক",
+      invalidOtp: "ভুল OTP",
+      newUser: "নতুন এখানে?",
+      existingUser: "ইতিমধ্যে অ্যাকাউন্ট আছে?",
+    },
+
+    // Dashboard
+    dashboard: {
+      title: "ড্যাশবোর্ড",
+      myTournaments: "আমার টুর্নামেন্ট",
+      joinedTournaments: "যোগ দেওয়া টুর্নামেন্ট",
+      recentAnnouncements: "সাম্প্রতিক ঘোষণা",
+      quickActions: "দ্রুত কার্যক্রম",
+      createTournament: "টুর্নামেন্ট তৈরি করুন",
+      joinTournament: "টুর্নামেন্টে যোগ দিন",
+      noTournaments: "কোন টুর্নামেন্ট নেই",
+      startFirst: "আপনার প্রথম টুর্নামেন্ট তৈরি করুন অথবা একটিতে যোগ দিন!",
+    },
+
+    // Tournament
+    tournament: {
+      create: "টুর্নামেন্ট তৈরি করুন",
+      join: "টুর্নামেন্টে যোগ দিন",
+      name: "টুর্নামেন্টের নাম",
+      description: "বিবরণ",
+      code: "টুর্নামেন্ট কোড",
+      enterCode: "টুর্নামেন্ট কোড দিন",
+      joinWithCode: "কোড দিয়ে যোগ দিন",
+      copyCode: "কোড কপি করুন",
+      shareCode: "কোড শেয়ার করুন",
+      startDate: "শুরুর তারিখ",
+      endDate: "শেষের তারিখ",
+      maxPlayers: "সর্বোচ্চ খেলোয়াড়",
+      created: "টুর্নামেন্ট সফলভাবে তৈরি হয়েছে!",
+      joined: "সফলভাবে টুর্নামেন্টে যোগ দিয়েছেন!",
+      invalidCode: "ভুল টুর্নামেন্ট কোড",
+      alreadyJoined: "আপনি ইতিমধ্যে এই টুর্নামেন্টে যোগ দিয়েছেন",
+      tournamentDetails: "টুর্নামেন্টের বিবরণ",
+      manageTournament: "টুর্নামেন্ট পরিচালনা",
+      viewTournament: "টুর্নামেন্ট দেখুন",
+      players: "খেলোয়াড়",
+      teams: "দল",
+      admin: "অ্যাডমিন",
+      creator: "প্রতিষ্ঠাতা",
+      active: "সক্রিয়",
+      inactive: "নিষ্ক্রিয়",
+    },
+
+    // Teams
+    teams: {
+      title: "দল",
+      createTeam: "দল তৈরি করুন",
+      teamName: "দলের নাম",
+      selectPlayers: "খেলোয়াড় নির্বাচন করুন",
+      assignPlayers: "খেলোয়াড় নিয়োগ করুন",
+      removePlayer: "খেলোয়াড় সরান",
+      captain: "অধিনায়ক",
+      viceCaptain: "সহ-অধিনায়ক",
+      player: "খেলোয়াড়",
+      manualMethod: "ম্যানুয়াল নিয়োগ",
+      randomMethod: "এলোমেলো বিতরণ",
+      advancedRandom: "উন্নত এলোমেলো",
+      numberOfTeams: "দলের সংখ্যা",
+      distributeEvenly: "সমানভাবে ভাগ করুন",
+      selectCategory: "বিভাগ নির্বাচন করুন",
+      categoryRules: "বিভাগের নিয়ম",
+      minPerTeam: "প্রতি দলে সর্বনিম্ন",
+      maxPerTeam: "প্রতি দলে সর্বোচ্চ",
+      generateTeams: "দল তৈরি করুন",
+      teamsGenerated: "দল সফলভাবে তৈরি হয়েছে!",
+      noTeams: "এখনো কোন দল তৈরি হয়নি",
+    },
+
+    // Players
+    players: {
+      title: "খেলোয়াড়",
+      addPlayer: "খেলোয়াড় যোগ করুন",
+      removePlayer: "খেলোয়াড় সরান",
+      playerList: "খেলোয়াড় তালিকা",
+      searchPlayers: "খেলোয়াড় খুঁজুন...",
+      category: "বিভাগ",
+      assignCategory: "বিভাগ নিয়োগ করুন",
+      noPlayers: "এই টুর্নামেন্টে কোন খেলোয়াড় নেই",
+      invitePlayers: "টুর্নামেন্ট কোড ব্যবহার করে খেলোয়াড়দের আমন্ত্রণ জানান",
+      playerCount: "জন খেলোয়াড়",
+    },
+
+    // Categories
+    categories: {
+      title: "খেলোয়াড় বিভাগ",
+      create: "বিভাগ তৈরি করুন",
+      name: "বিভাগের নাম",
+      description: "বিবরণ",
+      premiumBowler: "প্রিমিয়াম বোলার",
+      batsman: "ব্যাটসম্যান",
+      allRounder: "অলরাউন্ডার",
+      beginner: "নবীন",
+      wicketKeeper: "উইকেট কিপার",
+    },
+
+    // Announcements
+    announcements: {
+      title: "ঘোষণা",
+      create: "ঘোষণা তৈরি করুন",
+      postTitle: "শিরোনাম",
+      content: "বিষয়বস্তু",
+      type: "ধরন",
+      announcement: "ঘোষণা",
+      matchInfo: "ম্যাচের তথ্য",
+      image: "ছবি",
+      jersey: "জার্সি ডিজাইন",
+      pinned: "পিন করা",
+      pin: "পিন",
+      unpin: "আনপিন",
+      uploadImage: "ছবি আপলোড করুন",
+      noAnnouncements: "এখনো কোন ঘোষণা নেই",
+    },
+
+    // Logo Generator
+    logo: {
+      title: "লোগো জেনারেটর",
+      generateLogo: "লোগো তৈরি করুন",
+      enterPrompt: "লোগো তৈরির জন্য প্রম্পট দিন",
+      promptPlaceholder: "যেমন: সোনালী ট্রফি সহ একটি ক্রিকেট টুর্নামেন্ট লোগো",
+      generating: "লোগো তৈরি হচ্ছে...",
+      generated: "লোগো তৈরি হয়েছে!",
+      useAsLogo: "টুর্নামেন্ট লোগো হিসেবে ব্যবহার করুন",
+      regenerate: "আবার তৈরি করুন",
+      autoGenerate: "টুর্নামেন্টের নাম থেকে তৈরি করুন",
+    },
+
+    // Profile
+    profile: {
+      title: "প্রোফাইল",
+      editProfile: "প্রোফাইল সম্পাদনা",
+      myTournaments: "আমার টুর্নামেন্ট",
+      myTeams: "আমার দল",
+      memberSince: "সদস্য থেকে",
+      tournamentsJoined: "যোগ দেওয়া টুর্নামেন্ট",
+      tournamentsCreated: "তৈরি করা টুর্নামেন্ট",
+    },
+
+    // Admin
+    admin: {
+      title: "অ্যাডমিন প্যানেল",
+      addAdmin: "অ্যাডমিন যোগ করুন",
+      removeAdmin: "অ্যাডমিন সরান",
+      adminList: "অ্যাডমিন তালিকা",
+      permissions: "অনুমতি",
+      manageTeams: "দল পরিচালনা",
+      managePlayers: "খেলোয়াড় পরিচালনা",
+      makeAnnouncements: "ঘোষণা করুন",
+    },
+
+    // Errors
+    errors: {
+      required: "এই ক্ষেত্রটি আবশ্যক",
+      invalidPhone: "সঠিক ফোন নম্বর দিন",
+      networkError: "নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।",
+      unauthorized: "এই কাজের অনুমতি নেই",
+      notFound: "পাওয়া যায়নি",
+    },
+  },
+};
+
+export type Language = "en" | "bn";
+export type TranslationKey = keyof typeof translations.en;
+
+export function getTranslation(lang: Language) {
+  return translations[lang];
+}
