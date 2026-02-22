@@ -537,67 +537,91 @@ function PlayersTab({
   searchQuery,
   setSearchQuery,
   filteredPlayers,
-  onRefresh,
+  onUpdateData,
 }: {
   data: TournamentData;
   t: Translations;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   filteredPlayers: TournamentData["players"];
-  onRefresh: () => void;
+  onUpdateData: (updater: (prev: TournamentData) => TournamentData) => void;
 }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
-  const [savingName, setSavingName] = useState(false);
 
+  // Optimistic remove player
   const handleRemovePlayer = async (playerId: string) => {
     if (!confirm(t.players.removePlayer + "?")) return;
 
-    setLoading(playerId);
-    try {
-      await fetch(`/api/tournaments/${data.tournament.id}/players?playerId=${playerId}`, {
-        method: "DELETE",
-      });
-      onRefresh();
-    } catch (error) {
-      console.error("Error removing player:", error);
-    } finally {
-      setLoading(null);
-    }
+    // Optimistic update
+    onUpdateData(prev => ({
+      ...prev,
+      players: prev.players.filter(p => p.id !== playerId),
+      teams: prev.teams.map(team => ({
+        ...team,
+        members: team.members.filter(m => m.player.id !== playerId),
+      })),
+    }));
+
+    // API call in background
+    fetch(`/api/tournaments/${data.tournament.id}/players?playerId=${playerId}`, {
+      method: "DELETE",
+    }).catch(console.error);
   };
 
+  // Optimistic category update
   const handleUpdateCategory = async (playerId: string, category: string) => {
-    try {
-      await fetch(`/api/tournaments/${data.tournament.id}/players`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, category }),
-      });
-      onRefresh();
-    } catch (error) {
-      console.error("Error updating category:", error);
-    }
+    // Optimistic update
+    onUpdateData(prev => ({
+      ...prev,
+      players: prev.players.map(p => 
+        p.id === playerId ? { ...p, category } : p
+      ),
+      teams: prev.teams.map(team => ({
+        ...team,
+        members: team.members.map(m => 
+          m.player.id === playerId ? { ...m, player: { ...m.player, category } } : m
+        ),
+      })),
+    }));
+
+    // API call in background
+    fetch(`/api/tournaments/${data.tournament.id}/players`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId, category }),
+    }).catch(console.error);
   };
 
+  // Optimistic rename
   const handleRenamePlayer = async (playerId: string) => {
     if (!editName.trim()) return;
-    setSavingName(true);
+    const newName = editName.trim();
 
-    try {
-      await fetch(`/api/tournaments/${data.tournament.id}/players`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId, name: editName }),
-      });
-      setEditingPlayer(null);
-      setEditName("");
-      onRefresh();
-    } catch (error) {
-      console.error("Error renaming player:", error);
-    } finally {
-      setSavingName(false);
-    }
+    // Optimistic update
+    onUpdateData(prev => ({
+      ...prev,
+      players: prev.players.map(p => 
+        p.id === playerId ? { ...p, user: { ...p.user, name: newName } } : p
+      ),
+      teams: prev.teams.map(team => ({
+        ...team,
+        members: team.members.map(m => 
+          m.player.id === playerId ? { ...m, user: { ...m.user, name: newName } } : m
+        ),
+      })),
+    }));
+
+    setEditingPlayer(null);
+    setEditName("");
+
+    // API call in background
+    fetch(`/api/tournaments/${data.tournament.id}/players`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId, name: newName }),
+    }).catch(console.error);
   };
 
   const startEditing = (player: { id: string; user: { name: string } }) => {
@@ -660,10 +684,9 @@ function PlayersTab({
                           />
                           <button
                             onClick={() => handleRenamePlayer(player.id)}
-                            disabled={savingName}
                             className="p-1 text-green-600 hover:bg-green-50 rounded"
                           >
-                            {savingName ? <Loader size="sm" /> : "✓"}
+                            ✓
                           </button>
                           <button
                             onClick={() => {
