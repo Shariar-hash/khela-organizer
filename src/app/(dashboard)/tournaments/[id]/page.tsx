@@ -760,6 +760,39 @@ function TeamsTab({
   const [editingTeam, setEditingTeam] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [managingTeam, setManagingTeam] = useState<string | null>(null);
+
+  // Players not in any team
+  const unassignedPlayers = useMemo(() => {
+    const assignedIds = new Set(data.teams.flatMap(team => team.members.map(m => m.player.id)));
+    return data.players.filter(p => !assignedIds.has(p.id));
+  }, [data.teams, data.players]);
+
+  const handleAddPlayer = async (teamId: string, playerId: string) => {
+    try {
+      await fetch(`/api/tournaments/${data.tournament.id}/teams`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamId, addPlayerId: playerId }),
+      });
+      onRefresh();
+    } catch (error) {
+      console.error("Error adding player:", error);
+    }
+  };
+
+  const handleRemovePlayer = async (teamId: string, playerId: string) => {
+    try {
+      await fetch(`/api/tournaments/${data.tournament.id}/teams`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamId, removePlayerId: playerId }),
+      });
+      onRefresh();
+    } catch (error) {
+      console.error("Error removing player:", error);
+    }
+  };
 
   const handleRenameTeam = async (teamId: string) => {
     if (!editName.trim()) return;
@@ -901,7 +934,7 @@ function TeamsTab({
                   {team.members.map((member) => (
                     <div
                       key={member.user.id}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 group"
                     >
                       <Avatar
                         name={member.user.name}
@@ -921,9 +954,64 @@ function TeamsTab({
                           {member.member.role}
                         </Badge>
                       )}
+                      {data.isAdmin && (
+                        <button
+                          onClick={() => handleRemovePlayer(team.id, member.player.id)}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                          title={t.teams.removePlayer}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
+
+                {/* Add Player Section for Admin */}
+                {data.isAdmin && (
+                  <div className="mt-3 pt-3 border-t">
+                    {managingTeam === team.id ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">{t.teams.addPlayers}</span>
+                          <button
+                            onClick={() => setManagingTeam(null)}
+                            className="text-sm text-gray-500 hover:text-gray-700"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
+                          {unassignedPlayers.length === 0 ? (
+                            <p className="text-sm text-gray-400 text-center py-2">
+                              {t.teams.allPlayersAssigned}
+                            </p>
+                          ) : (
+                            unassignedPlayers.map(player => (
+                              <button
+                                key={player.id}
+                                onClick={() => handleAddPlayer(team.id, player.id)}
+                                className="w-full flex items-center gap-2 p-2 hover:bg-gray-50 rounded text-left text-sm"
+                              >
+                                <Avatar name={player.user.name} size="sm" />
+                                <span className="flex-1">{player.user.name}</span>
+                                <Plus className="w-4 h-4 text-gray-400" />
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setManagingTeam(team.id)}
+                        className="w-full py-2 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-primary-300 hover:text-primary-500 transition-colors text-sm flex items-center justify-center gap-1"
+                      >
+                        <Plus className="w-4 h-4" />
+                        {t.teams.addPlayers}
+                      </button>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

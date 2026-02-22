@@ -4,7 +4,7 @@ import { db, tournamentAdmins, tournamentPlayers, teams, teamMembers, users } fr
 import { eq, and } from "drizzle-orm";
 import { generateTeamColors, distributePlayersToTeams, distributePlayersByCategoryToTeams } from "@/lib/utils";
 
-// Update team (rename)
+// Update team (rename, add/remove players)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -17,7 +17,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { teamId, name, color } = body;
+    const { teamId, name, color, addPlayerId, removePlayerId } = body;
 
     if (!teamId) {
       return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
@@ -50,21 +50,62 @@ export async function PATCH(
       return NextResponse.json({ error: "Team not found" }, { status: 404 });
     }
 
-    // Update team
-    const updatedTeam = await db
-      .update(teams)
-      .set({
-        ...(name && { name }),
-        ...(color && { color }),
-        updatedAt: new Date(),
-      })
-      .where(eq(teams.id, teamId))
-      .returning();
+    // Add player to team
+    if (addPlayerId) {
+      // Verify player belongs to this tournament
+      const player = await db
+        .select()
+        .from(tournamentPlayers)
+        .where(and(eq(tournamentPlayers.id, addPlayerId), eq(tournamentPlayers.tournamentId, id)))
+        .limit(1);
 
-    return NextResponse.json({
-      success: true,
-      team: updatedTeam[0],
-    });
+      if (player.length === 0) {
+        return NextResponse.json({ error: "Player not found" }, { status: 404 });
+      }
+
+      // Remove from any existing team first
+      await db.delete(teamMembers).where(eq(teamMembers.playerId, addPlayerId));
+
+      // Add to new team
+      await db.insert(teamMembers).values({
+        teamId,
+        playerId: addPlayerId,
+      });
+
+      return NextResponse.json({ success: true, action: "playerAdded" });
+    }
+
+    // Remove player from team
+    if (removePlayerId) {
+      await db.delete(teamMembers).where(
+        and(
+          eq(teamMembers.teamId, teamId),
+          eq(teamMembers.playerId, removePlayerId)
+        )
+      );
+
+      return NextResponse.json({ success: true, action: "playerRemoved" });
+    }
+
+    // Update team name/color
+    if (name || color) {
+      const updatedTeam = await db
+        .update(teams)
+        .set({
+          ...(name && { name }),
+          ...(color && { color }),
+          updatedAt: new Date(),
+        })
+        .where(eq(teams.id, teamId))
+        .returning();
+
+      return NextResponse.json({
+        success: true,
+        team: updatedTeam[0],
+      });
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Update team error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

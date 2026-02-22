@@ -170,6 +170,7 @@ export const translations = {
       remainingPlayers: "Remaining Players",
       willBeDistributed: "will be distributed evenly",
       warningDeleteExisting: "Warning: This will delete all existing teams!",
+      allPlayersAssigned: "All players are assigned to teams",
     },
 
     // Players
@@ -439,6 +440,7 @@ export const translations = {
       remainingPlayers: "অবশিষ্ট খেলোয়াড়",
       willBeDistributed: "সমানভাবে বিতরণ করা হবে",
       warningDeleteExisting: "সতর্কতা: এটি বিদ্যমান সব দল মুছে ফেলবে!",
+      allPlayersAssigned: "সব খেলোয়াড় দলে নিয়োগ করা হয়েছে",
     },
 
     // Players
