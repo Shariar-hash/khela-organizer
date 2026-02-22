@@ -1,4 +1,4 @@
-# 🏆 Kela Organizer | কেলা অর্গানাইজার
+# 🏆 Khela Organizer | খেলা অর্গানাইজার
 
 A modern, beginner-friendly tournament management web application with bilingual support (English/Bangla).
 
