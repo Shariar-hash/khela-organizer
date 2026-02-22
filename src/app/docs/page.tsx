@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useLanguageStore } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { LanguageToggle } from "@/components/layout";
 import {
   Trophy,
   Users,
-  UserPlus,
   Hash,
   Shuffle,
   Bell,
@@ -13,9 +14,11 @@ import {
   Phone,
   Shield,
   Globe,
+  ArrowLeft,
+  BookOpen,
 } from "lucide-react";
 
-export default function DocsPage() {
+export default function PublicDocsPage() {
   const { t, language } = useLanguageStore();
 
   const docs = {
@@ -139,15 +142,13 @@ All players will see announcements when they visit the tournament page.`,
 **Tips for Good Prompts:**
 - "Modern cricket tournament logo with bat and ball"
 - "Football league emblem with flames"
-- "Minimalist sports trophy icon"
-
-**Note:** Requires Gemini API key in environment variables.`,
+- "Minimalist sports trophy icon"`,
         },
         {
           icon: Globe,
           title: "Language Support",
           content: `**Switching Languages:**
-- Click the language toggle (🌐) in the sidebar
+- Click the language toggle (🌐) button
 - Choose between English and বাংলা
 - The entire app will switch languages
 
@@ -275,15 +276,13 @@ The app fully supports both English and Bangla for all features.`,
 **ভালো প্রম্পটের টিপস:**
 - "ব্যাট ও বল সহ আধুনিক ক্রিকেট টুর্নামেন্ট লোগো"
 - "আগুনের সাথে ফুটবল লিগ প্রতীক"
-- "মিনিমালিস্ট স্পোর্টস ট্রফি আইকন"
-
-**নোট:** এনভায়রনমেন্ট ভেরিয়েবলে Gemini API কী প্রয়োজন।`,
+- "মিনিমালিস্ট স্পোর্টস ট্রফি আইকন"`,
         },
         {
           icon: Globe,
           title: "ভাষা সাপোর্ট",
           content: `**ভাষা পরিবর্তন:**
-- সাইডবারে ভাষা টগল (🌐) ক্লিক করুন
+- ভাষা টগল (🌐) বাটন ক্লিক করুন
 - English এবং বাংলার মধ্যে বেছে নিন
 - পুরো অ্যাপ ভাষা পরিবর্তন করবে
 
@@ -296,71 +295,121 @@ The app fully supports both English and Bangla for all features.`,
   const currentDocs = docs[language];
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {currentDocs.title}
-        </h1>
-        <p className="text-gray-500">{currentDocs.subtitle}</p>
-      </div>
+      <header className="p-4 flex justify-between items-center border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <Link href="/login" className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+            <Trophy className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-xl font-bold text-gray-900">Kela</span>
+        </Link>
+        <div className="flex items-center gap-3">
+          <LanguageToggle />
+          <Link
+            href="/login"
+            className="px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
+          >
+            {t.common.login}
+          </Link>
+        </div>
+      </header>
 
-      {/* Documentation Sections */}
-      <div className="space-y-6">
-        {currentDocs.sections.map((section, index) => (
-          <Card key={index}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-                  <section.icon className="w-5 h-5 text-white" />
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto p-4 py-8">
+        {/* Back Link */}
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t.common.back}
+        </Link>
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {currentDocs.title}
+          </h1>
+          <p className="text-gray-500">{currentDocs.subtitle}</p>
+        </div>
+
+        {/* Documentation Sections */}
+        <div className="space-y-6">
+          {currentDocs.sections.map((section, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+                    <section.icon className="w-5 h-5 text-white" />
+                  </div>
+                  {section.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="prose prose-gray max-w-none">
+                <div className="whitespace-pre-line text-gray-600 leading-relaxed">
+                  {section.content.split(/\*\*(.*?)\*\*/g).map((part, i) =>
+                    i % 2 === 1 ? (
+                      <strong key={i} className="text-gray-900">
+                        {part}
+                      </strong>
+                    ) : (
+                      <span key={i}>{part}</span>
+                    )
+                  )}
                 </div>
-                {section.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-gray max-w-none">
-              <div className="whitespace-pre-line text-gray-600 leading-relaxed">
-                {section.content.split(/\*\*(.*?)\*\*/g).map((part, i) =>
-                  i % 2 === 1 ? (
-                    <strong key={i} className="text-gray-900">
-                      {part}
-                    </strong>
-                  ) : (
-                    <span key={i}>{part}</span>
-                  )
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-      {/* Quick Tips */}
-      <Card className="bg-gradient-to-br from-primary-50 to-accent-50 border-primary-200">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
-            {language === "en" ? "💡 Quick Tips" : "💡 দ্রুত টিপস"}
-          </h3>
-          <ul className="space-y-2 text-gray-600">
-            {language === "en" ? (
-              <>
-                <li>• Use the search bar to quickly find players</li>
-                <li>• Pin important announcements to keep them visible</li>
-                <li>• Create categories before generating random teams</li>
-                <li>• Share the tournament code via WhatsApp or SMS</li>
-                <li>• Add multiple admins to help manage large tournaments</li>
-              </>
-            ) : (
-              <>
-                <li>• দ্রুত খেলোয়াড় খুঁজতে সার্চ বার ব্যবহার করুন</li>
-                <li>• গুরুত্বপূর্ণ ঘোষণা পিন করে রাখুন</li>
-                <li>• র‍্যান্ডম দল তৈরির আগে ক্যাটাগরি তৈরি করুন</li>
-                <li>• WhatsApp বা SMS এর মাধ্যমে টুর্নামেন্ট কোড শেয়ার করুন</li>
-                <li>• বড় টুর্নামেন্ট ম্যানেজ করতে একাধিক অ্যাডমিন যোগ করুন</li>
-              </>
-            )}
-          </ul>
-        </CardContent>
-      </Card>
+        {/* Quick Tips */}
+        <Card className="mt-6 bg-gradient-to-br from-primary-50 to-accent-50 border-primary-200">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              {language === "en" ? "💡 Quick Tips" : "💡 দ্রুত টিপস"}
+            </h3>
+            <ul className="space-y-2 text-gray-600">
+              {language === "en" ? (
+                <>
+                  <li>• Use the search bar to quickly find players</li>
+                  <li>• Pin important announcements to keep them visible</li>
+                  <li>• Create categories before generating random teams</li>
+                  <li>• Share the tournament code via WhatsApp or SMS</li>
+                  <li>• Add multiple admins to help manage large tournaments</li>
+                </>
+              ) : (
+                <>
+                  <li>• দ্রুত খেলোয়াড় খুঁজতে সার্চ বার ব্যবহার করুন</li>
+                  <li>• গুরুত্বপূর্ণ ঘোষণা পিন করে রাখুন</li>
+                  <li>• র‍্যান্ডম দল তৈরির আগে ক্যাটাগরি তৈরি করুন</li>
+                  <li>• WhatsApp বা SMS এর মাধ্যমে টুর্নামেন্ট কোড শেয়ার করুন</li>
+                  <li>• বড় টুর্নামেন্ট ম্যানেজ করতে একাধিক অ্যাডমিন যোগ করুন</li>
+                </>
+              )}
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* CTA */}
+        <div className="text-center mt-8">
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
+          >
+            {language === "en" ? "Get Started Now" : "এখনই শুরু করুন"}
+            <Trophy className="w-5 h-5" />
+          </Link>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="p-4 text-center text-sm text-gray-500 border-t bg-white/80">
+        © 2026 Kela Organizer. All rights reserved.
+      </footer>
     </div>
   );
 }

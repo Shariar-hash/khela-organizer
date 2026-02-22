@@ -1,49 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createOTP, getOrCreateUser, createSession, verifyOTP } from "@/lib/auth";
+import { getOrCreateUser, createSession } from "@/lib/auth";
 import { db, users } from "@/lib/db";
 import { eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { phone, name, otp, action } = body;
+    const { phone, name, action } = body;
 
-    // Step 1: Send OTP
-    if (action === "send_otp") {
+    // Simple login - just phone number
+    if (action === "login") {
       if (!phone) {
         return NextResponse.json(
           { error: "Phone number is required" },
-          { status: 400 }
-        );
-      }
-
-      const otpCode = await createOTP(phone);
-      
-      // In production, send OTP via SMS service
-      // For demo, we'll return it (remove in production!)
-      console.log(`OTP for ${phone}: ${otpCode}`);
-
-      return NextResponse.json({
-        success: true,
-        message: "OTP sent successfully",
-        // Remove the line below in production
-        debug_otp: otpCode,
-      });
-    }
-
-    // Step 2: Verify OTP and login/signup
-    if (action === "verify_otp") {
-      if (!phone || !otp) {
-        return NextResponse.json(
-          { error: "Phone and OTP are required" },
-          { status: 400 }
-        );
-      }
-
-      const isValid = await verifyOTP(phone, otp);
-      if (!isValid) {
-        return NextResponse.json(
-          { error: "Invalid or expired OTP" },
           { status: 400 }
         );
       }

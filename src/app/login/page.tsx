@@ -6,20 +6,18 @@ import Link from "next/link";
 import { Button, Input, Card, CardContent } from "@/components/ui";
 import { useLanguageStore } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/layout";
-import { Trophy, Phone, User, KeyRound, ArrowRight } from "lucide-react";
+import { Trophy, Phone, User, ArrowRight, BookOpen } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const { t } = useLanguageStore();
-  const [step, setStep] = useState<"phone" | "otp" | "name">("phone");
+  const [step, setStep] = useState<"phone" | "name">("phone");
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [debugOtp, setDebugOtp] = useState("");
 
-  const handleSendOtp = async () => {
+  const handleLogin = async () => {
     if (!phone) {
       setError(t.auth.phoneRequired);
       return;
@@ -32,41 +30,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, action: "send_otp" }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setStep("otp");
-        // For demo purposes - remove in production
-        if (data.debug_otp) {
-          setDebugOtp(data.debug_otp);
-        }
-      } else {
-        setError(data.error || t.common.error);
-      }
-    } catch {
-      setError(t.errors.networkError);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otp) {
-      setError(t.auth.invalidOtp);
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, otp, name, action: "verify_otp" }),
+        body: JSON.stringify({ phone, name, action: "login" }),
       });
 
       const data = await res.json();
@@ -79,7 +43,7 @@ export default function LoginPage() {
           router.refresh();
         }
       } else {
-        setError(data.error || t.auth.invalidOtp);
+        setError(data.error || t.common.error);
       }
     } catch {
       setError(t.errors.networkError);
@@ -101,7 +65,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, otp, name, action: "verify_otp" }),
+        body: JSON.stringify({ phone, name, action: "login" }),
       });
 
       const data = await res.json();
@@ -129,7 +93,16 @@ export default function LoginPage() {
           </div>
           <span className="text-xl font-bold text-gray-900">Kela</span>
         </Link>
-        <LanguageToggle />
+        <div className="flex items-center gap-3">
+          <Link
+            href="/docs"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors"
+          >
+            <BookOpen className="w-4 h-4" />
+            {t.nav.docs}
+          </Link>
+          <LanguageToggle />
+        </div>
       </header>
 
       {/* Main Content */}
@@ -156,20 +129,13 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Debug OTP - Remove in production */}
-            {debugOtp && step === "otp" && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-600 text-sm">
-                Demo OTP: <strong>{debugOtp}</strong>
-              </div>
-            )}
-
             {/* Phone Step */}
             {step === "phone" && (
               <div className="space-y-4">
                 <Input
                   label={t.auth.phoneNumber}
                   type="tel"
-                  placeholder="+880 1XXX-XXXXXX"
+                  placeholder="01XXX-XXXXXX"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   leftIcon={<Phone size={20} />}
@@ -177,51 +143,21 @@ export default function LoginPage() {
                 <Button
                   className="w-full"
                   size="lg"
-                  onClick={handleSendOtp}
+                  onClick={handleLogin}
                   loading={loading}
                 >
-                  {t.common.next}
+                  {t.common.login}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
-              </div>
-            )}
-
-            {/* OTP Step */}
-            {step === "otp" && (
-              <div className="space-y-4">
-                <p className="text-sm text-gray-500 text-center mb-2">
-                  {t.auth.otpSent}
-                </p>
-                <Input
-                  label={t.auth.enterOtp}
-                  type="text"
-                  placeholder="000000"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  leftIcon={<KeyRound size={20} />}
-                  maxLength={6}
-                  className="text-center text-2xl tracking-widest"
-                />
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={handleVerifyOtp}
-                  loading={loading}
-                >
-                  {t.auth.verifyOtp}
-                </Button>
-                <button
-                  onClick={() => setStep("phone")}
-                  className="w-full text-sm text-primary-600 hover:text-primary-700"
-                >
-                  {t.auth.resendOtp}
-                </button>
               </div>
             )}
 
             {/* Name Step (for new users) */}
             {step === "name" && (
               <div className="space-y-4">
+                <p className="text-sm text-gray-500 text-center mb-2">
+                  {t.auth.newUser} {t.auth.signupSubtitle}
+                </p>
                 <Input
                   label={t.auth.playerName}
                   type="text"
@@ -239,6 +175,12 @@ export default function LoginPage() {
                   {t.common.signup}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
+                <button
+                  onClick={() => setStep("phone")}
+                  className="w-full text-sm text-primary-600 hover:text-primary-700"
+                >
+                  ← {t.common.back}
+                </button>
               </div>
             )}
           </CardContent>
@@ -247,7 +189,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <footer className="p-4 text-center text-sm text-gray-500">
-        © 2026 TourneyPro. All rights reserved.
+        © 2026 Kela Organizer. All rights reserved.
       </footer>
     </div>
   );
