@@ -335,7 +335,7 @@ export default function TournamentDashboardPage({
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           filteredPlayers={filteredPlayers}
-          onRefresh={fetchTournament}
+          onUpdateData={(updater) => setData(prev => prev ? updater(prev) : prev)}
         />
       )}
 
@@ -354,7 +354,7 @@ export default function TournamentDashboardPage({
           data={data}
           t={t}
           onCreate={() => setShowCreateAnnouncement(true)}
-          onRefresh={fetchTournament}
+          onUpdateData={(updater) => setData(prev => prev ? updater(prev) : prev)}
         />
       )}
 
@@ -364,7 +364,7 @@ export default function TournamentDashboardPage({
           t={t}
           onAddAdmin={() => setShowAddAdmin(true)}
           onGenerateLogo={() => setShowLogoGenerator(true)}
-          onRefresh={fetchTournament}
+          onUpdateData={(updater) => setData(prev => prev ? updater(prev) : prev)}
         />
       )}
 
@@ -546,7 +546,6 @@ function PlayersTab({
   filteredPlayers: TournamentData["players"];
   onUpdateData: (updater: (prev: TournamentData) => TournamentData) => void;
 }) {
-  const [loading, setLoading] = useState<string | null>(null);
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
@@ -749,7 +748,6 @@ function PlayersTab({
                     {data.isAdmin && !isCreator && (
                       <button
                         onClick={() => handleRemovePlayer(player.id)}
-                        disabled={loading === player.id}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1084,25 +1082,28 @@ function AnnouncementsTab({
   data,
   t,
   onCreate,
-  onRefresh,
+  onUpdateData,
 }: {
   data: TournamentData;
   t: Translations;
   onCreate: () => void;
-  onRefresh: () => void;
+  onUpdateData: (updater: (prev: TournamentData) => TournamentData) => void;
 }) {
+  // Optimistic delete
   const handleDelete = async (announcementId: string) => {
     if (!confirm(t.common.delete + "?")) return;
 
-    try {
-      await fetch(
-        `/api/tournaments/${data.tournament.id}/announcements?announcementId=${announcementId}`,
-        { method: "DELETE" }
-      );
-      onRefresh();
-    } catch (error) {
-      console.error("Error deleting announcement:", error);
-    }
+    // Optimistic update
+    onUpdateData(prev => ({
+      ...prev,
+      announcements: prev.announcements.filter(a => a.id !== announcementId),
+    }));
+
+    // API call in background
+    fetch(
+      `/api/tournaments/${data.tournament.id}/announcements?announcementId=${announcementId}`,
+      { method: "DELETE" }
+    ).catch(console.error);
   };
 
   return (
@@ -1182,13 +1183,13 @@ function SettingsTab({
   t,
   onAddAdmin,
   onGenerateLogo,
-  onRefresh,
+  onUpdateData,
 }: {
   data: TournamentData;
   t: Translations;
   onAddAdmin: () => void;
   onGenerateLogo: () => void;
-  onRefresh: () => void;
+  onUpdateData: (updater: (prev: TournamentData) => TournamentData) => void;
 }) {
   const [tournamentName, setTournamentName] = useState(data.tournament.name);
   const [startDate, setStartDate] = useState(
@@ -1201,59 +1202,64 @@ function SettingsTab({
       ? new Date(data.tournament.endDate).toISOString().split('T')[0] 
       : ""
   );
-  const [savingName, setSavingName] = useState(false);
-  const [savingDates, setSavingDates] = useState(false);
 
+  // Optimistic update name
   const handleUpdateName = async () => {
     if (!tournamentName.trim()) return;
-    setSavingName(true);
+    const newName = tournamentName.trim();
 
-    try {
-      await fetch(`/api/tournaments/${data.tournament.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: tournamentName }),
-      });
-      onRefresh();
-    } catch (error) {
-      console.error("Error updating name:", error);
-    } finally {
-      setSavingName(false);
-    }
+    // Optimistic update
+    onUpdateData(prev => ({
+      ...prev,
+      tournament: { ...prev.tournament, name: newName },
+    }));
+
+    // API call in background
+    fetch(`/api/tournaments/${data.tournament.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+    }).catch(console.error);
   };
 
+  // Optimistic update dates
   const handleUpdateDates = async () => {
-    setSavingDates(true);
+    // Optimistic update
+    onUpdateData(prev => ({
+      ...prev,
+      tournament: { 
+        ...prev.tournament, 
+        startDate: startDate || undefined, 
+        endDate: endDate || undefined 
+      },
+    }));
 
-    try {
-      await fetch(`/api/tournaments/${data.tournament.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          startDate: startDate || null, 
-          endDate: endDate || null 
-        }),
-      });
-      onRefresh();
-    } catch (error) {
-      console.error("Error updating dates:", error);
-    } finally {
-      setSavingDates(false);
-    }
+    // API call in background
+    fetch(`/api/tournaments/${data.tournament.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        startDate: startDate || null, 
+        endDate: endDate || null 
+      }),
+    }).catch(console.error);
   };
 
+  // Optimistic remove admin
   const handleRemoveAdmin = async (adminId: string) => {
     if (!confirm(t.admin.removeAdmin + "?")) return;
 
-    try {
-      await fetch(
-        `/api/tournaments/${data.tournament.id}/admins?adminId=${adminId}`,
-        { method: "DELETE" }
-      );
-      onRefresh();
-    } catch (error) {
-      console.error("Error removing admin:", error);
-    }
+    // Optimistic update
+    onUpdateData(prev => ({
+      ...prev,
+      admins: prev.admins.filter(a => a.id !== adminId),
+    }));
+
+    // API call in background
+    fetch(
+      `/api/tournaments/${data.tournament.id}/admins?adminId=${adminId}`,
+      { method: "DELETE" }
+    ).catch(console.error);
   };
 
   return (
@@ -1281,7 +1287,6 @@ function SettingsTab({
               />
               <Button
                 onClick={handleUpdateName}
-                loading={savingName}
                 disabled={tournamentName === data.tournament.name || !tournamentName.trim()}
               >
                 {t.common.save}
@@ -1318,7 +1323,6 @@ function SettingsTab({
             </div>
             <Button
               onClick={handleUpdateDates}
-              loading={savingDates}
               className="mt-3"
               variant="outline"
             >
