@@ -365,6 +365,7 @@ export default function TournamentDashboardPage({
           onAddAdmin={() => setShowAddAdmin(true)}
           onGenerateLogo={() => setShowLogoGenerator(true)}
           onUpdateData={(updater) => setData(prev => prev ? updater(prev) : prev)}
+          onRefresh={fetchTournament}
         />
       )}
 
@@ -782,6 +783,8 @@ function TeamsTab({
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
   const [managingTeam, setManagingTeam] = useState<string | null>(null);
+  const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
+  const [editPlayerName, setEditPlayerName] = useState("");
   
   // Local state for optimistic updates
   const [localTeams, setLocalTeams] = useState(data.teams);
@@ -808,9 +811,9 @@ function TeamsTab({
         return {
           ...team,
           members: [...team.members, {
-            member: { id: `temp-${Date.now()}`, role: null },
+            member: { id: `temp-${Date.now()}`, role: undefined },
             player: { id: playerId, category: player.category },
-            user: player.user,
+            user: { id: player.user.id, name: player.user.name, avatarUrl: player.user.avatarUrl },
           }],
         };
       }
@@ -847,6 +850,30 @@ function TeamsTab({
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teamId, removePlayerId: playerId }),
+    }).catch(console.error);
+  };
+
+  // Optimistic rename player
+  const handleRenamePlayer = async (playerId: string) => {
+    if (!editPlayerName.trim()) return;
+    const newName = editPlayerName.trim();
+
+    // Optimistic update
+    setLocalTeams(prev => prev.map(team => ({
+      ...team,
+      members: team.members.map(m => 
+        m.player.id === playerId ? { ...m, user: { ...m.user, name: newName } } : m
+      ),
+    })));
+
+    setEditingPlayer(null);
+    setEditPlayerName("");
+
+    // API call in background
+    fetch(`/api/tournaments/${data.tournament.id}/players`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId, name: newName }),
     }).catch(console.error);
   };
 
@@ -998,11 +1025,46 @@ function TeamsTab({
                         size="sm"
                       />
                       <div className="flex-1">
-                        <p className="text-sm font-medium">{member.user.name}</p>
-                        {member.player.category && (
-                          <p className="text-xs text-gray-500">
-                            {member.player.category}
-                          </p>
+                        {editingPlayer === member.player.id ? (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              value={editPlayerName}
+                              onChange={(e) => setEditPlayerName(e.target.value)}
+                              className="h-7 text-sm"
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleRenamePlayer(member.player.id);
+                                if (e.key === "Escape") {
+                                  setEditingPlayer(null);
+                                  setEditPlayerName("");
+                                }
+                              }}
+                            />
+                            <button
+                              onClick={() => handleRenamePlayer(member.player.id)}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingPlayer(null);
+                                setEditPlayerName("");
+                              }}
+                              className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm font-medium">{member.user.name}</p>
+                            {member.player.category && (
+                              <p className="text-xs text-gray-500">
+                                {member.player.category}
+                              </p>
+                            )}
+                          </>
                         )}
                       </div>
                       {member.member.role && (
@@ -1010,14 +1072,26 @@ function TeamsTab({
                           {member.member.role}
                         </Badge>
                       )}
-                      {data.isAdmin && (
-                        <button
-                          onClick={() => handleRemovePlayer(team.id, member.player.id)}
-                          className="p-1 text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                          title={t.teams.removePlayer}
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                      {data.isAdmin && editingPlayer !== member.player.id && (
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => {
+                              setEditingPlayer(member.player.id);
+                              setEditPlayerName(member.user.name);
+                            }}
+                            className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+                            title={t.players.editName}
+                          >
+                            <Settings className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleRemovePlayer(team.id, member.player.id)}
+                            className="p-1 text-red-500 hover:bg-red-50 rounded"
+                            title={t.teams.removePlayer}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   ))}
@@ -1184,12 +1258,14 @@ function SettingsTab({
   onAddAdmin,
   onGenerateLogo,
   onUpdateData,
+  onRefresh,
 }: {
   data: TournamentData;
   t: Translations;
   onAddAdmin: () => void;
   onGenerateLogo: () => void;
   onUpdateData: (updater: (prev: TournamentData) => TournamentData) => void;
+  onRefresh: () => void;
 }) {
   const [tournamentName, setTournamentName] = useState(data.tournament.name);
   const [startDate, setStartDate] = useState(

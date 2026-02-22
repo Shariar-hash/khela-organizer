@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   title: "Khela Organizer - খেলা অর্গানাইজার",
   description: "Organize and manage tournaments with ease. Support for English and Bangla. সহজে টুর্নামেন্ট আয়োজন ও পরিচালনা করুন।",
   keywords: ["tournament", "sports", "cricket", "organizer", "team management", "khela", "bangla"],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: { url: "/apple-icon.png", sizes: "180x180" },
+  },
 };
 
 export default function RootLayout({

@@ -66,7 +66,7 @@ export async function GET(
     }
 
     // Get all team members in one query if there are teams
-    let teamsWithMembers = [];
+    let teamsWithMembers: Array<typeof tournamentTeamsResult[0] & { members: Array<{ member: typeof teamMembers.$inferSelect; player: typeof tournamentPlayers.$inferSelect; user: typeof users.$inferSelect }> }> = [];
     if (tournamentTeamsResult.length > 0) {
       const teamIds = tournamentTeamsResult.map(t => t.id);
       const allMembers = await db
