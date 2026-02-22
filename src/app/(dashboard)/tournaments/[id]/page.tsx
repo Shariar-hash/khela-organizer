@@ -761,70 +761,105 @@ function TeamsTab({
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
   const [managingTeam, setManagingTeam] = useState<string | null>(null);
+  
+  // Local state for optimistic updates
+  const [localTeams, setLocalTeams] = useState(data.teams);
+  
+  // Sync local teams when data changes (e.g., after create/random)
+  useEffect(() => {
+    setLocalTeams(data.teams);
+  }, [data.teams]);
 
-  // Players not in any team
+  // Players not in any team (use localTeams for instant updates)
   const unassignedPlayers = useMemo(() => {
-    const assignedIds = new Set(data.teams.flatMap(team => team.members.map(m => m.player.id)));
+    const assignedIds = new Set(localTeams.flatMap(team => team.members.map(m => m.player.id)));
     return data.players.filter(p => !assignedIds.has(p.id));
-  }, [data.teams, data.players]);
+  }, [localTeams, data.players]);
 
+  // Optimistic add player to team
   const handleAddPlayer = async (teamId: string, playerId: string) => {
-    try {
-      await fetch(`/api/tournaments/${data.tournament.id}/teams`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamId, addPlayerId: playerId }),
-      });
-      onRefresh();
-    } catch (error) {
-      console.error("Error adding player:", error);
-    }
+    const player = data.players.find(p => p.id === playerId);
+    if (!player) return;
+
+    // Optimistic update - instant UI change
+    setLocalTeams(prev => prev.map(team => {
+      if (team.id === teamId) {
+        return {
+          ...team,
+          members: [...team.members, {
+            member: { id: `temp-${Date.now()}`, role: null },
+            player: { id: playerId, category: player.category },
+            user: player.user,
+          }],
+        };
+      }
+      // Remove from other teams
+      return {
+        ...team,
+        members: team.members.filter(m => m.player.id !== playerId),
+      };
+    }));
+
+    // API call in background (no await blocking UI)
+    fetch(`/api/tournaments/${data.tournament.id}/teams`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teamId, addPlayerId: playerId }),
+    }).catch(console.error);
   };
 
+  // Optimistic remove player from team
   const handleRemovePlayer = async (teamId: string, playerId: string) => {
-    try {
-      await fetch(`/api/tournaments/${data.tournament.id}/teams`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamId, removePlayerId: playerId }),
-      });
-      onRefresh();
-    } catch (error) {
-      console.error("Error removing player:", error);
-    }
+    // Optimistic update - instant UI change
+    setLocalTeams(prev => prev.map(team => {
+      if (team.id === teamId) {
+        return {
+          ...team,
+          members: team.members.filter(m => m.player.id !== playerId),
+        };
+      }
+      return team;
+    }));
+
+    // API call in background
+    fetch(`/api/tournaments/${data.tournament.id}/teams`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teamId, removePlayerId: playerId }),
+    }).catch(console.error);
   };
 
+  // Optimistic rename
   const handleRenameTeam = async (teamId: string) => {
     if (!editName.trim()) return;
-    setSaving(true);
+    
+    // Optimistic update
+    setLocalTeams(prev => prev.map(team => 
+      team.id === teamId ? { ...team, name: editName.trim() } : team
+    ));
+    setEditingTeam(null);
+    const newName = editName.trim();
+    setEditName("");
 
-    try {
-      await fetch(`/api/tournaments/${data.tournament.id}/teams`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamId, name: editName }),
-      });
-      setEditingTeam(null);
-      setEditName("");
-      onRefresh();
-    } catch (error) {
-      console.error("Error renaming team:", error);
-    } finally {
-      setSaving(false);
-    }
+    // API call in background
+    fetch(`/api/tournaments/${data.tournament.id}/teams`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teamId, name: newName }),
+    }).catch(console.error);
   };
 
+  // Optimistic delete
   const handleDeleteTeam = async (teamId: string) => {
     if (!confirm(t.teams.confirmDeleteTeam)) return;
 
-    try {
-      await fetch(`/api/tournaments/${data.tournament.id}/teams?teamId=${teamId}`, {
-        method: "DELETE",
-      });
-      onRefresh();
-    } catch (error) {
-      console.error("Error deleting team:", error);
-    }
+    // Optimistic update
+    setLocalTeams(prev => prev.filter(team => team.id !== teamId));
+
+    // API call in background
+    fetch(`/api/tournaments/${data.tournament.id}/teams?teamId=${teamId}`, {
+      method: "DELETE",
+    }).catch(console.error);
   };
 
   const startEditing = (team: { id: string; name: string }) => {
@@ -847,7 +882,7 @@ function TeamsTab({
         </div>
       )}
 
-      {data.teams.length === 0 ? (
+      {localTeams.length === 0 ? (
         <EmptyState
           icon={<Users className="w-8 h-8" />}
           title={t.teams.noTeams}
@@ -862,7 +897,7 @@ function TeamsTab({
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.teams.map((team) => (
+          {localTeams.map((team) => (
             <Card key={team.id}>
               <CardHeader
                 className="border-l-4"
@@ -933,7 +968,7 @@ function TeamsTab({
                 <div className="space-y-2">
                   {team.members.map((member) => (
                     <div
-                      key={member.user.id}
+                      key={member.player.id}
                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 group"
                     >
                       <Avatar
