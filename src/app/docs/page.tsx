@@ -24,12 +24,12 @@ export default function PublicDocsPage() {
   const docs = {
     en: {
       title: "Documentation",
-      subtitle: "Learn how to use Kela Organizer",
+      subtitle: "Learn how to use Khela Organizer",
       sections: [
         {
           icon: Trophy,
           title: "Getting Started",
-          content: `Welcome to Kela Organizer! This app helps you organize tournaments easily. Here's how to get started:
+          content: `Welcome to Khela Organizer! This app helps you organize tournaments easily. Here's how to get started:
 
 1. **Login with Phone**: Enter your phone number to login
 2. **Create Tournament**: Go to "Create Tournament" and fill in the details
@@ -158,12 +158,12 @@ The app fully supports both English and Bangla for all features.`,
     },
     bn: {
       title: "ডকুমেন্টেশন",
-      subtitle: "কেলা অর্গানাইজার কীভাবে ব্যবহার করবেন শিখুন",
+      subtitle: "খেলা অর্গানাইজার কীভাবে ব্যবহার করবেন শিখুন",
       sections: [
         {
           icon: Trophy,
           title: "শুরু করুন",
-          content: `কেলা অর্গানাইজারে স্বাগতম! এই অ্যাপ আপনাকে সহজে টুর্নামেন্ট আয়োজন করতে সাহায্য করে। শুরু করতে:
+          content: `খেলা অর্গানাইজারে স্বাগতম! এই অ্যাপ আপনাকে সহজে টুর্নামেন্ট আয়োজন করতে সাহায্য করে। শুরু করতে:
 
 ১. **ফোন দিয়ে লগইন**: লগইন করতে আপনার ফোন নম্বর দিন
 ২. **টুর্নামেন্ট তৈরি**: "টুর্নামেন্ট তৈরি করুন" এ যান এবং বিস্তারিত পূরণ করুন
@@ -302,7 +302,7 @@ The app fully supports both English and Bangla for all features.`,
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
             <Trophy className="w-6 h-6 text-white" />
           </div>
-          <span className="text-xl font-bold text-gray-900">Kela</span>
+          <span className="text-xl font-bold text-gray-900">Khela</span>
         </Link>
         <div className="flex items-center gap-3">
           <LanguageToggle />
@@ -408,7 +408,7 @@ The app fully supports both English and Bangla for all features.`,
 
       {/* Footer */}
       <footer className="p-4 text-center text-sm text-gray-500 border-t bg-white/80">
-        © 2026 Kela Organizer. All rights reserved.
+        © 2026 Khela Organizer. All rights reserved.
       </footer>
     </div>
   );

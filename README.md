@@ -4,7 +4,7 @@ A modern, beginner-friendly tournament management web application with bilingual
 
 একটি আধুনিক, শিক্ষানবিস-বান্ধব টুর্নামেন্ট ম্যানেজমেন্ট ওয়েব অ্যাপ্লিকেশন যা ইংরেজি ও বাংলা উভয় ভাষায় কাজ করে।
 
-![Kela Organizer](https://img.shields.io/badge/Kela-Organizer-green?style=for-the-badge)
+![Khela Organizer](https://img.shields.io/badge/Khela-Organizer-green?style=for-the-badge)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?style=flat-square)
@@ -14,7 +14,7 @@ A modern, beginner-friendly tournament management web application with bilingual
 | English | বাংলা |
 |---------|-------|
 | 🏆 Create and manage tournaments | 🏆 টুর্নামেন্ট তৈরি ও পরিচালনা |
-| 📱 Phone + OTP authentication | 📱 ফোন + OTP দিয়ে লগইন |
+| 📱 Simple phone login | 📱 সহজ ফোন লগইন |
 | 👥 Player registration with unique codes | 👥 ইউনিক কোড দিয়ে খেলোয়াড় রেজিস্ট্রেশন |
 | 🎯 Team management (manual/random) | 🎯 দল ব্যবস্থাপনা (ম্যানুয়াল/র‍্যান্ডম) |
 | 📢 Announcements and posts | 📢 ঘোষণা ও পোস্ট |
@@ -44,8 +44,8 @@ A modern, beginner-friendly tournament management web application with bilingual
 
 1. **Clone the repository | রিপোজিটরি ক্লোন করুন:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/kela-organizer.git
-   cd kela-organizer
+   git clone https://github.com/Shariar-hash/kela-organizer.git
+   cd khela-organizer
    ```
 
 2. **Install dependencies | ডিপেন্ডেন্সি ইনস্টল করুন:**
@@ -109,14 +109,14 @@ A modern, beginner-friendly tournament management web application with bilingual
 ## 📁 Project Structure | প্রজেক্ট স্ট্রাকচার
 
 ```
-kela-organizer/
+khela-organizer/
 ├── src/
 │   ├── app/                    # Next.js App Router pages
 │   │   ├── (dashboard)/        # Dashboard pages
 │   │   │   ├── dashboard/      # Main dashboard
 │   │   │   ├── tournaments/    # Tournament pages
-│   │   │   ├── profile/        # User profile
-│   │   │   └── docs/           # Documentation
+│   │   │   └── profile/        # User profile
+│   │   ├── docs/               # Public documentation
 │   │   ├── api/                # API routes
 │   │   └── login/              # Login page
 │   ├── components/

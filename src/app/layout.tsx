@@ -14,9 +14,9 @@ const notoSansBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
-  title: "Kela Organizer - টুর্নামেন্ট ম্যানেজার",
+  title: "Khela Organizer - খেলা অর্গানাইজার",
   description: "Organize and manage tournaments with ease. Support for English and Bangla. সহজে টুর্নামেন্ট আয়োজন ও পরিচালনা করুন।",
-  keywords: ["tournament", "sports", "cricket", "organizer", "team management", "kela", "bangla"],
+  keywords: ["tournament", "sports", "cricket", "organizer", "team management", "khela", "bangla"],
 };
 
 export default function RootLayout({
