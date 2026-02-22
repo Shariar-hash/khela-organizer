@@ -15,7 +15,6 @@ import {
   X,
   Plus,
   LogOut,
-  BookOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { LanguageToggle } from "./LanguageToggle";
@@ -37,7 +36,6 @@ export function Sidebar({ user }: SidebarProps) {
   const navItems = [
     { href: "/dashboard", icon: Home, label: t.nav.dashboard },
     { href: "/tournaments", icon: Trophy, label: t.nav.tournaments },
-    { href: "/docs", icon: BookOpen, label: t.nav.docs },
     { href: "/profile", icon: User, label: t.nav.profile },
   ];
 
