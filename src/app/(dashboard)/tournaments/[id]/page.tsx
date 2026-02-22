@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useLanguageStore, getTranslation } from "@/lib/i18n";
 import {
@@ -40,6 +40,11 @@ import {
   Megaphone,
   Calendar,
   X,
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  AlertTriangle,
+  Layers,
 } from "lucide-react";
 
 interface TournamentData {
@@ -120,11 +125,7 @@ export default function TournamentDashboardPage({
   const [showCreateAnnouncement, setShowCreateAnnouncement] = useState(false);
   const [showLogoGenerator, setShowLogoGenerator] = useState(false);
 
-  useEffect(() => {
-    fetchTournament();
-  }, [id]);
-
-  const fetchTournament = async () => {
+  const fetchTournament = useCallback(async () => {
     try {
       const res = await fetch(`/api/tournaments/${id}`);
       const result = await res.json();
@@ -136,15 +137,44 @@ export default function TournamentDashboardPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const copyCode = () => {
+  useEffect(() => {
+    fetchTournament();
+  }, [fetchTournament]);
+
+  const copyCode = useCallback(() => {
     if (data) {
       navigator.clipboard.writeText(data.tournament.code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  };
+  }, [data]);
+
+  // Memoized filtered players for better performance
+  const filteredPlayers = useMemo(() => {
+    if (!data) return [];
+    const query = searchQuery.toLowerCase();
+    return data.players.filter(
+      (p) =>
+        p.user.name.toLowerCase().includes(query) ||
+        p.user.phone.includes(searchQuery)
+    );
+  }, [data?.players, searchQuery]);
+
+  // Memoized tabs array
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      { id: "overview", label: t.nav.dashboard, icon: <Trophy className="w-4 h-4" /> },
+      { id: "players", label: t.players.title, icon: <Users className="w-4 h-4" /> },
+      { id: "teams", label: t.teams.title, icon: <Users className="w-4 h-4" /> },
+      { id: "announcements", label: t.announcements.title, icon: <Bell className="w-4 h-4" /> },
+    ];
+    if (data?.isAdmin) {
+      baseTabs.push({ id: "settings", label: t.admin.title, icon: <Settings className="w-4 h-4" /> });
+    }
+    return baseTabs;
+  }, [t, data?.isAdmin]);
 
   if (loading) {
     return (
@@ -169,23 +199,6 @@ export default function TournamentDashboardPage({
       </div>
     );
   }
-
-  const tabs = [
-    { id: "overview", label: t.nav.dashboard, icon: <Trophy className="w-4 h-4" /> },
-    { id: "players", label: t.players.title, icon: <Users className="w-4 h-4" /> },
-    { id: "teams", label: t.teams.title, icon: <Users className="w-4 h-4" /> },
-    { id: "announcements", label: t.announcements.title, icon: <Bell className="w-4 h-4" /> },
-  ];
-
-  if (data.isAdmin) {
-    tabs.push({ id: "settings", label: t.admin.title, icon: <Settings className="w-4 h-4" /> });
-  }
-
-  const filteredPlayers = data.players.filter(
-    (p) =>
-      p.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.user.phone.includes(searchQuery)
-  );
 
   return (
     <div className="p-4 lg:p-8">
@@ -534,6 +547,9 @@ function PlayersTab({
   onRefresh: () => void;
 }) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   const handleRemovePlayer = async (playerId: string) => {
     if (!confirm(t.players.removePlayer + "?")) return;
@@ -564,6 +580,31 @@ function PlayersTab({
     }
   };
 
+  const handleRenamePlayer = async (playerId: string) => {
+    if (!editName.trim()) return;
+    setSavingName(true);
+
+    try {
+      await fetch(`/api/tournaments/${data.tournament.id}/players`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId, name: editName }),
+      });
+      setEditingPlayer(null);
+      setEditName("");
+      onRefresh();
+    } catch (error) {
+      console.error("Error renaming player:", error);
+    } finally {
+      setSavingName(false);
+    }
+  };
+
+  const startEditing = (player: { id: string; user: { name: string } }) => {
+    setEditingPlayer(player.id);
+    setEditName(player.user.name);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -587,6 +628,8 @@ function PlayersTab({
               const isCreator = data.admins.some(
                 (a) => a.userId === player.userId && a.role === "creator"
               );
+              const isSelf = player.userId === data.currentUserId;
+              const canEdit = isSelf || data.isAdmin;
 
               return (
                 <div
@@ -600,21 +643,67 @@ function PlayersTab({
                       size="md"
                     />
                     <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{player.user.name}</p>
-                        {isCreator && (
-                          <Badge variant="warning" size="sm">
-                            <Crown className="w-3 h-3 mr-1" />
-                            {t.tournament.creator}
-                          </Badge>
-                        )}
-                        {isAdmin && !isCreator && (
-                          <Badge variant="primary" size="sm">
-                            <Shield className="w-3 h-3 mr-1" />
-                            {t.tournament.admin}
-                          </Badge>
-                        )}
-                      </div>
+                      {editingPlayer === player.id ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="w-40"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenamePlayer(player.id);
+                              if (e.key === "Escape") {
+                                setEditingPlayer(null);
+                                setEditName("");
+                              }
+                            }}
+                          />
+                          <button
+                            onClick={() => handleRenamePlayer(player.id)}
+                            disabled={savingName}
+                            className="p-1 text-green-600 hover:bg-green-50 rounded"
+                          >
+                            {savingName ? <Loader size="sm" /> : "✓"}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingPlayer(null);
+                              setEditName("");
+                            }}
+                            className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{player.user.name}</p>
+                          {canEdit && (
+                            <button
+                              onClick={() => startEditing(player)}
+                              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
+                              title={t.players.editName}
+                            >
+                              <Settings className="w-3 h-3" />
+                            </button>
+                          )}
+                          {isCreator && (
+                            <Badge variant="warning" size="sm">
+                              <Crown className="w-3 h-3 mr-1" />
+                              {t.tournament.creator}
+                            </Badge>
+                          )}
+                          {isAdmin && !isCreator && (
+                            <Badge variant="primary" size="sm">
+                              <Shield className="w-3 h-3 mr-1" />
+                              {t.tournament.admin}
+                            </Badge>
+                          )}
+                          {isSelf && !isAdmin && (
+                            <Badge variant="info" size="sm">You</Badge>
+                          )}
+                        </div>
+                      )}
                       <p className="text-sm text-gray-500">{player.user.phone}</p>
                     </div>
                   </div>
@@ -668,6 +757,48 @@ function TeamsTab({
   onRandomTeams: () => void;
   onRefresh: () => void;
 }) {
+  const [editingTeam, setEditingTeam] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleRenameTeam = async (teamId: string) => {
+    if (!editName.trim()) return;
+    setSaving(true);
+
+    try {
+      await fetch(`/api/tournaments/${data.tournament.id}/teams`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamId, name: editName }),
+      });
+      setEditingTeam(null);
+      setEditName("");
+      onRefresh();
+    } catch (error) {
+      console.error("Error renaming team:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteTeam = async (teamId: string) => {
+    if (!confirm(t.teams.confirmDeleteTeam)) return;
+
+    try {
+      await fetch(`/api/tournaments/${data.tournament.id}/teams?teamId=${teamId}`, {
+        method: "DELETE",
+      });
+      onRefresh();
+    } catch (error) {
+      console.error("Error deleting team:", error);
+    }
+  };
+
+  const startEditing = (team: { id: string; name: string }) => {
+    setEditingTeam(team.id);
+    setEditName(team.name);
+  };
+
   return (
     <div className="space-y-6">
       {data.isAdmin && (
@@ -705,8 +836,64 @@ function TeamsTab({
                 style={{ borderLeftColor: team.color }}
               >
                 <CardTitle className="flex items-center justify-between">
-                  <span>{team.name}</span>
-                  <Badge>{team.members.length} {t.tournament.players}</Badge>
+                  {editingTeam === team.id ? (
+                    <div className="flex items-center gap-2 flex-1">
+                      <Input
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="flex-1"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleRenameTeam(team.id);
+                          if (e.key === "Escape") {
+                            setEditingTeam(null);
+                            setEditName("");
+                          }
+                        }}
+                      />
+                      <button
+                        onClick={() => handleRenameTeam(team.id)}
+                        disabled={saving}
+                        className="p-1 text-green-600 hover:bg-green-50 rounded"
+                      >
+                        {saving ? <Loader size="sm" /> : "✓"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingTeam(null);
+                          setEditName("");
+                        }}
+                        className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <span>{team.name}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge>{team.members.length} {t.tournament.players}</Badge>
+                        {data.isAdmin && (
+                          <>
+                            <button
+                              onClick={() => startEditing(team)}
+                              className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+                              title={t.teams.renameTeam}
+                            >
+                              <Settings className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTeam(team.id)}
+                              className="p-1 text-red-500 hover:bg-red-50 rounded"
+                              title={t.teams.deleteTeam}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4">
@@ -857,6 +1044,58 @@ function SettingsTab({
   onGenerateLogo: () => void;
   onRefresh: () => void;
 }) {
+  const [tournamentName, setTournamentName] = useState(data.tournament.name);
+  const [startDate, setStartDate] = useState(
+    data.tournament.startDate 
+      ? new Date(data.tournament.startDate).toISOString().split('T')[0] 
+      : ""
+  );
+  const [endDate, setEndDate] = useState(
+    data.tournament.endDate 
+      ? new Date(data.tournament.endDate).toISOString().split('T')[0] 
+      : ""
+  );
+  const [savingName, setSavingName] = useState(false);
+  const [savingDates, setSavingDates] = useState(false);
+
+  const handleUpdateName = async () => {
+    if (!tournamentName.trim()) return;
+    setSavingName(true);
+
+    try {
+      await fetch(`/api/tournaments/${data.tournament.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: tournamentName }),
+      });
+      onRefresh();
+    } catch (error) {
+      console.error("Error updating name:", error);
+    } finally {
+      setSavingName(false);
+    }
+  };
+
+  const handleUpdateDates = async () => {
+    setSavingDates(true);
+
+    try {
+      await fetch(`/api/tournaments/${data.tournament.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          startDate: startDate || null, 
+          endDate: endDate || null 
+        }),
+      });
+      onRefresh();
+    } catch (error) {
+      console.error("Error updating dates:", error);
+    } finally {
+      setSavingDates(false);
+    }
+  };
+
   const handleRemoveAdmin = async (adminId: string) => {
     if (!confirm(t.admin.removeAdmin + "?")) return;
 
@@ -873,6 +1112,77 @@ function SettingsTab({
 
   return (
     <div className="space-y-6">
+      {/* Tournament Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            {t.tournament.tournamentSettings}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          {/* Rename Tournament */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.tournament.renameTournament}
+            </label>
+            <div className="flex gap-3">
+              <Input
+                value={tournamentName}
+                onChange={(e) => setTournamentName(e.target.value)}
+                placeholder={t.tournament.name}
+                className="flex-1"
+              />
+              <Button
+                onClick={handleUpdateName}
+                loading={savingName}
+                disabled={tournamentName === data.tournament.name || !tournamentName.trim()}
+              >
+                {t.common.save}
+              </Button>
+            </div>
+          </div>
+
+          {/* Update Dates */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.tournament.updateDates}
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  {t.tournament.startDate}
+                </label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">
+                  {t.tournament.endDate}
+                </label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+            <Button
+              onClick={handleUpdateDates}
+              loading={savingDates}
+              className="mt-3"
+              variant="outline"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              {t.tournament.updateDates}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Logo Generator */}
       <Card>
         <CardHeader>
@@ -1261,74 +1571,444 @@ function RandomTeamsModal({
   t: Translations;
   onSuccess: () => void;
 }) {
+  // Mode: 'select' | 'full' | 'categorized'
+  const [mode, setMode] = useState<'select' | 'full' | 'categorized'>('select');
   const [numberOfTeams, setNumberOfTeams] = useState("2");
-  const [useCategories, setUseCategories] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Category cards state
+  const [categoryCards, setCategoryCards] = useState<Array<{
+    id: string;
+    name: string;
+    perTeam: number;
+    playerIds: string[];
+  }>>([]);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [showPlayerPickerFor, setShowPlayerPickerFor] = useState<string | null>(null);
 
+  // Reset on open
+  useEffect(() => {
+    if (isOpen) {
+      setMode('select');
+      setNumberOfTeams("2");
+      setCategoryCards([]);
+      setNewCategoryName("");
+      setShowPlayerPickerFor(null);
+    }
+  }, [isOpen]);
+
+  // Players already assigned to a category
+  const assignedPlayerIds = useMemo(() => {
+    return new Set(categoryCards.flatMap(c => c.playerIds));
+  }, [categoryCards]);
+
+  // Available players for picker
+  const availablePlayers = useMemo(() => {
+    return players.filter(p => !assignedPlayerIds.has(p.id));
+  }, [players, assignedPlayerIds]);
+
+  // Validation
+  const validation = useMemo(() => {
+    const numTeams = parseInt(numberOfTeams) || 2;
+    const issues: string[] = [];
+
+    if (mode === 'categorized') {
+      categoryCards.forEach(card => {
+        const required = card.perTeam * numTeams;
+        if (required > card.playerIds.length) {
+          issues.push(`${card.name}: ${t.teams.need} ${required}, ${t.teams.have} ${card.playerIds.length}`);
+        }
+      });
+    }
+
+    const playersPerTeam = Math.floor(players.length / numTeams);
+    const remainder = players.length % numTeams;
+
+    return {
+      issues,
+      playersPerTeam,
+      remainder,
+      isValid: issues.length === 0 && numTeams >= 2 && players.length >= numTeams,
+    };
+  }, [mode, numberOfTeams, categoryCards, players.length, t]);
+
+  // Add category card
+  const addCategoryCard = () => {
+    if (!newCategoryName.trim()) return;
+    setCategoryCards(prev => [...prev, {
+      id: `cat-${Date.now()}`,
+      name: newCategoryName.trim(),
+      perTeam: 1,
+      playerIds: [],
+    }]);
+    setNewCategoryName("");
+  };
+
+  // Remove category card
+  const removeCategoryCard = (cardId: string) => {
+    setCategoryCards(prev => prev.filter(c => c.id !== cardId));
+    if (showPlayerPickerFor === cardId) setShowPlayerPickerFor(null);
+  };
+
+  // Update per team count
+  const updatePerTeam = (cardId: string, value: number) => {
+    setCategoryCards(prev => prev.map(c => 
+      c.id === cardId ? { ...c, perTeam: Math.max(1, value) } : c
+    ));
+  };
+
+  // Add player to category
+  const addPlayerToCategory = (cardId: string, playerId: string) => {
+    setCategoryCards(prev => prev.map(c => 
+      c.id === cardId ? { ...c, playerIds: [...c.playerIds, playerId] } : c
+    ));
+  };
+
+  // Remove player from category
+  const removePlayerFromCategory = (cardId: string, playerId: string) => {
+    setCategoryCards(prev => prev.map(c => 
+      c.id === cardId ? { ...c, playerIds: c.playerIds.filter(id => id !== playerId) } : c
+    ));
+  };
+
+  // Submit
   const handleSubmit = async () => {
     setLoading(true);
-
     try {
-      const categoryRules: Record<string, { min: number }> = {};
-      if (useCategories) {
-        categories.forEach((c) => {
-          if (c.minPerTeam > 0) {
-            categoryRules[c.name] = { min: c.minPerTeam };
+      if (mode === 'full') {
+        await fetch(`/api/tournaments/${tournamentId}/teams`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ numberOfTeams: parseInt(numberOfTeams), useCategories: false }),
+        });
+      } else {
+        // Update players with categories
+        for (const card of categoryCards) {
+          for (const playerId of card.playerIds) {
+            await fetch(`/api/tournaments/${tournamentId}/players`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ playerId, category: card.name }),
+            });
           }
+        }
+
+        // Build rules
+        const categoryRules: Record<string, { min: number }> = {};
+        categoryCards.forEach(card => {
+          categoryRules[card.name] = { min: card.perTeam };
+        });
+
+        await fetch(`/api/tournaments/${tournamentId}/teams`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            numberOfTeams: parseInt(numberOfTeams),
+            useCategories: true,
+            categoryRules,
+          }),
         });
       }
-
-      await fetch(`/api/tournaments/${tournamentId}/teams`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          numberOfTeams: parseInt(numberOfTeams),
-          useCategories,
-          categoryRules,
-        }),
-      });
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Error generating teams:", error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  // Mode Selection Screen
+  if (mode === 'select') {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.randomMethod} size="md">
+        <div className="space-y-4">
+          <p className="text-gray-600 text-sm">{t.teams.selectMode}</p>
+          
+          <button
+            onClick={() => setMode('full')}
+            className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center">
+                <Shuffle className="w-6 h-6 text-primary-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900">{t.teams.fullRandom}</h3>
+                <p className="text-sm text-gray-500">{t.teams.fullRandomDesc}</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </button>
+
+          <button
+            onClick={() => setMode('categorized')}
+            className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-accent-500 hover:bg-accent-50 transition-all text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-accent-100 flex items-center justify-center">
+                <Layers className="w-6 h-6 text-accent-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900">{t.teams.categorizedRandom}</h3>
+                <p className="text-sm text-gray-500">{t.teams.categorizedRandomDesc}</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </button>
+        </div>
+      </Modal>
+    );
+  }
+
+  // Full Random Screen
+  if (mode === 'full') {
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.fullRandom} size="md">
+        <div className="space-y-5">
+          <Input
+            label={t.teams.numberOfTeams}
+            type="number"
+            value={numberOfTeams}
+            onChange={(e) => setNumberOfTeams(e.target.value)}
+            min="2"
+          />
+
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-600">{t.tournament.players}</span>
+              <span className="font-bold text-xl">{players.length}</span>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-600">{t.teams.title}</span>
+              <span className="font-bold text-xl">{numberOfTeams}</span>
+            </div>
+            <div className="border-t pt-2 mt-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">{t.teams.playersPerTeam}</span>
+                <span className="font-medium">
+                  ~{validation.playersPerTeam}
+                  {validation.remainder > 0 && <span className="text-gray-400"> (+{validation.remainder})</span>}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-amber-600 bg-amber-50 rounded-lg p-3 text-sm">
+            <AlertTriangle className="w-4 h-4" />
+            <span>{t.teams.warningDeleteExisting}</span>
+          </div>
+
+          <div className="flex gap-3 justify-between">
+            <Button variant="ghost" onClick={() => setMode('select')}>
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              {t.common.back}
+            </Button>
+            <Button onClick={handleSubmit} loading={loading} disabled={!validation.isValid}>
+              <Shuffle className="w-4 h-4 mr-2" />
+              {t.teams.generateTeams}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  // Categorized Random Screen - Card Based
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t.teams.randomMethod}>
+    <Modal isOpen={isOpen} onClose={onClose} title={t.teams.categorizedRandom} size="lg">
       <div className="space-y-4">
-        <Input
-          label={t.teams.numberOfTeams}
-          type="number"
-          value={numberOfTeams}
-          onChange={(e) => setNumberOfTeams(e.target.value)}
-          min="2"
-          max={Math.floor(players.length / 2).toString()}
-        />
+        {/* Add Category */}
+        <div className="flex gap-2">
+          <Input
+            placeholder={t.categories.name + " (Captain, Batsman, Bowler...)"}
+            value={newCategoryName}
+            onChange={(e) => setNewCategoryName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addCategoryCard()}
+            className="flex-1"
+          />
+          <Button onClick={addCategoryCard} disabled={!newCategoryName.trim()}>
+            <Plus className="w-4 h-4 mr-1" />
+            {t.common.create}
+          </Button>
+        </div>
 
-        <p className="text-sm text-gray-500">
-          {players.length} {t.players.playerCount} → {numberOfTeams} {t.teams.title}
-        </p>
+        {/* Category Cards */}
+        <div className="space-y-3 max-h-[50vh] overflow-y-auto">
+          {categoryCards.length === 0 ? (
+            <div className="text-center py-8 bg-gray-50 rounded-xl">
+              <Layers className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+              <p className="text-gray-500 text-sm">Create categories like Captain, Batsman, Bowler</p>
+              <p className="text-gray-400 text-xs mt-1">Then add players to each category</p>
+            </div>
+          ) : (
+            categoryCards.map(card => (
+              <div key={card.id} className="border rounded-xl overflow-hidden bg-white">
+                {/* Card Header */}
+                <div className="bg-gray-50 p-3 flex items-center justify-between border-b">
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold text-gray-900">{card.name}</span>
+                    <Badge variant="info">{card.playerIds.length} {t.tournament.players}</Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-sm">
+                      <span className="text-gray-500">{t.teams.perTeam}:</span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={card.perTeam}
+                        onChange={(e) => updatePerTeam(card.id, parseInt(e.target.value) || 1)}
+                        className="w-12 text-center border rounded px-1 py-0.5"
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeCategoryCard(card.id)}
+                      className="p-1 text-red-500 hover:bg-red-50 rounded"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
 
-        {categories.length > 0 && (
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={useCategories}
-              onChange={(e) => setUseCategories(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-            />
-            <span>{t.teams.advancedRandom}</span>
-          </label>
+                {/* Players List */}
+                <div className="p-3">
+                  {showPlayerPickerFor === card.id ? (
+                    /* Player Picker */
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">{t.teams.selectPlayers}</span>
+                        <button
+                          onClick={() => setShowPlayerPickerFor(null)}
+                          className="text-sm text-primary-600 hover:underline"
+                        >
+                          Done
+                        </button>
+                      </div>
+                      <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
+                        {availablePlayers.length === 0 ? (
+                          <p className="text-sm text-gray-400 text-center py-2">All players assigned</p>
+                        ) : (
+                          availablePlayers.map(player => (
+                            <button
+                              key={player.id}
+                              onClick={() => addPlayerToCategory(card.id, player.id)}
+                              className="w-full flex items-center gap-2 p-2 hover:bg-gray-50 rounded text-left text-sm"
+                            >
+                              <Avatar name={player.user.name} size="sm" />
+                              <span className="flex-1">{player.user.name}</span>
+                              <Plus className="w-4 h-4 text-gray-400" />
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Selected Players */
+                    <div className="space-y-2">
+                      {card.playerIds.length === 0 ? (
+                        <button
+                          onClick={() => setShowPlayerPickerFor(card.id)}
+                          className="w-full py-3 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-primary-300 hover:text-primary-500 transition-colors text-sm"
+                        >
+                          <Plus className="w-4 h-4 inline mr-1" />
+                          {t.teams.addPlayers}
+                        </button>
+                      ) : (
+                        <>
+                          <div className="flex flex-wrap gap-2">
+                            {card.playerIds.map(playerId => {
+                              const player = players.find(p => p.id === playerId);
+                              if (!player) return null;
+                              return (
+                                <div
+                                  key={playerId}
+                                  className="flex items-center gap-1 bg-gray-100 rounded-full pl-1 pr-2 py-1"
+                                >
+                                  <Avatar name={player.user.name} size="sm" />
+                                  <span className="text-sm">{player.user.name}</span>
+                                  <button
+                                    onClick={() => removePlayerFromCategory(card.id, playerId)}
+                                    className="p-0.5 text-gray-400 hover:text-red-500 rounded-full"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <button
+                            onClick={() => setShowPlayerPickerFor(card.id)}
+                            className="text-sm text-primary-600 hover:underline"
+                          >
+                            + {t.teams.addPlayers}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Number of Teams & Summary */}
+        {categoryCards.length > 0 && (
+          <>
+            <div className="border-t pt-4">
+              <Input
+                label={t.teams.numberOfTeams}
+                type="number"
+                value={numberOfTeams}
+                onChange={(e) => setNumberOfTeams(e.target.value)}
+                min="2"
+              />
+            </div>
+
+            {/* Summary */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">{t.tournament.players}:</span>
+                <span className="font-medium">{players.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">{t.teams.categoryAssignments}:</span>
+                <span className="font-medium">{assignedPlayerIds.size} assigned</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">{t.teams.remainingPlayers}:</span>
+                <span className="font-medium">{players.length - assignedPlayerIds.size} ({t.teams.willBeDistributed})</span>
+              </div>
+            </div>
+
+            {/* Validation Errors */}
+            {validation.issues.length > 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-red-700 font-medium text-sm mb-1">{t.teams.validationError}</p>
+                <ul className="text-sm text-red-600 list-disc list-inside">
+                  {validation.issues.map((issue, i) => <li key={i}>{issue}</li>)}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 rounded-lg p-3 text-sm">
+              <AlertTriangle className="w-4 h-4" />
+              <span>{t.teams.warningDeleteExisting}</span>
+            </div>
+          </>
         )}
 
-        <div className="flex gap-3 justify-end">
-          <Button variant="ghost" onClick={onClose}>
-            {t.common.cancel}
+        {/* Actions */}
+        <div className="flex gap-3 justify-between pt-2 border-t">
+          <Button variant="ghost" onClick={() => setMode('select')}>
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            {t.common.back}
           </Button>
-          <Button onClick={handleSubmit} loading={loading}>
+          <Button
+            onClick={handleSubmit}
+            loading={loading}
+            disabled={categoryCards.length === 0 || !validation.isValid}
+          >
             <Shuffle className="w-4 h-4 mr-2" />
             {t.teams.generateTeams}
           </Button>

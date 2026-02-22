@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { db, tournaments, tournamentAdmins, tournamentPlayers, teams, teamMembers, announcements, users, playerCategories } from "@/lib/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
-// Get tournament details
+// Get tournament details - OPTIMIZED
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -16,106 +16,96 @@ export async function GET(
 
     const { id } = await params;
 
-    // Get tournament
-    const tournament = await db
-      .select()
-      .from(tournaments)
-      .where(eq(tournaments.id, id))
-      .limit(1);
-
-    if (tournament.length === 0) {
-      return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
-    }
-
-    // Check if user has access
-    const isPlayer = await db
-      .select()
-      .from(tournamentPlayers)
-      .where(
+    // Run all queries in parallel for better performance
+    const [
+      tournamentResult,
+      isPlayerResult,
+      adminsResult,
+      playersResult,
+      tournamentTeamsResult,
+      announcementsResult,
+      categoriesResult,
+    ] = await Promise.all([
+      // Get tournament
+      db.select().from(tournaments).where(eq(tournaments.id, id)).limit(1),
+      // Check if user has access
+      db.select().from(tournamentPlayers).where(
         and(
           eq(tournamentPlayers.tournamentId, id),
           eq(tournamentPlayers.userId, user.id)
         )
-      )
-      .limit(1);
+      ).limit(1),
+      // Get admins
+      db.select({ admin: tournamentAdmins, user: users })
+        .from(tournamentAdmins)
+        .innerJoin(users, eq(tournamentAdmins.userId, users.id))
+        .where(eq(tournamentAdmins.tournamentId, id)),
+      // Get players
+      db.select({ player: tournamentPlayers, user: users })
+        .from(tournamentPlayers)
+        .innerJoin(users, eq(tournamentPlayers.userId, users.id))
+        .where(eq(tournamentPlayers.tournamentId, id)),
+      // Get teams
+      db.select().from(teams).where(eq(teams.tournamentId, id)),
+      // Get announcements
+      db.select({ announcement: announcements, author: users })
+        .from(announcements)
+        .innerJoin(users, eq(announcements.authorId, users.id))
+        .where(eq(announcements.tournamentId, id))
+        .orderBy(announcements.createdAt),
+      // Get categories
+      db.select().from(playerCategories).where(eq(playerCategories.tournamentId, id)),
+    ]);
 
-    if (isPlayer.length === 0) {
+    if (tournamentResult.length === 0) {
+      return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
+    }
+
+    if (isPlayerResult.length === 0) {
       return NextResponse.json({ error: "You don't have access to this tournament" }, { status: 403 });
     }
 
-    // Get admins
-    const admins = await db
-      .select({
-        admin: tournamentAdmins,
-        user: users,
-      })
-      .from(tournamentAdmins)
-      .innerJoin(users, eq(tournamentAdmins.userId, users.id))
-      .where(eq(tournamentAdmins.tournamentId, id));
+    // Get all team members in one query if there are teams
+    let teamsWithMembers = [];
+    if (tournamentTeamsResult.length > 0) {
+      const teamIds = tournamentTeamsResult.map(t => t.id);
+      const allMembers = await db
+        .select({
+          member: teamMembers,
+          player: tournamentPlayers,
+          user: users,
+        })
+        .from(teamMembers)
+        .innerJoin(tournamentPlayers, eq(teamMembers.playerId, tournamentPlayers.id))
+        .innerJoin(users, eq(tournamentPlayers.userId, users.id))
+        .where(inArray(teamMembers.teamId, teamIds));
 
-    // Get players
-    const players = await db
-      .select({
-        player: tournamentPlayers,
-        user: users,
-      })
-      .from(tournamentPlayers)
-      .innerJoin(users, eq(tournamentPlayers.userId, users.id))
-      .where(eq(tournamentPlayers.tournamentId, id));
+      // Group members by team
+      const membersByTeam = new Map<string, typeof allMembers>();
+      allMembers.forEach(m => {
+        const teamId = m.member.teamId;
+        if (!membersByTeam.has(teamId)) {
+          membersByTeam.set(teamId, []);
+        }
+        membersByTeam.get(teamId)!.push(m);
+      });
 
-    // Get teams with members
-    const tournamentTeams = await db
-      .select()
-      .from(teams)
-      .where(eq(teams.tournamentId, id));
-
-    const teamsWithMembers = await Promise.all(
-      tournamentTeams.map(async (team) => {
-        const members = await db
-          .select({
-            member: teamMembers,
-            player: tournamentPlayers,
-            user: users,
-          })
-          .from(teamMembers)
-          .innerJoin(tournamentPlayers, eq(teamMembers.playerId, tournamentPlayers.id))
-          .innerJoin(users, eq(tournamentPlayers.userId, users.id))
-          .where(eq(teamMembers.teamId, team.id));
-
-        return {
-          ...team,
-          members,
-        };
-      })
-    );
-
-    // Get announcements
-    const tournamentAnnouncements = await db
-      .select({
-        announcement: announcements,
-        author: users,
-      })
-      .from(announcements)
-      .innerJoin(users, eq(announcements.authorId, users.id))
-      .where(eq(announcements.tournamentId, id))
-      .orderBy(announcements.createdAt);
-
-    // Get categories
-    const categories = await db
-      .select()
-      .from(playerCategories)
-      .where(eq(playerCategories.tournamentId, id));
+      teamsWithMembers = tournamentTeamsResult.map(team => ({
+        ...team,
+        members: membersByTeam.get(team.id) || [],
+      }));
+    }
 
     // Check if current user is admin
-    const isAdmin = admins.some(a => a.user.id === user.id);
+    const isAdmin = adminsResult.some(a => a.user.id === user.id);
 
     return NextResponse.json({
-      tournament: tournament[0],
-      admins: admins.map(a => ({ ...a.admin, user: a.user })),
-      players: players.map(p => ({ ...p.player, user: p.user })),
+      tournament: tournamentResult[0],
+      admins: adminsResult.map(a => ({ ...a.admin, user: a.user })),
+      players: playersResult.map(p => ({ ...p.player, user: p.user })),
       teams: teamsWithMembers,
-      announcements: tournamentAnnouncements.map(a => ({ ...a.announcement, author: a.author })),
-      categories,
+      announcements: announcementsResult.map(a => ({ ...a.announcement, author: a.author })),
+      categories: categoriesResult,
       isAdmin,
       currentUserId: user.id,
     });

@@ -4,6 +4,121 @@ import { db, tournamentAdmins, tournamentPlayers, teams, teamMembers, users } fr
 import { eq, and } from "drizzle-orm";
 import { generateTeamColors, distributePlayersToTeams, distributePlayersByCategoryToTeams } from "@/lib/utils";
 
+// Update team (rename)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const { teamId, name, color } = body;
+
+    if (!teamId) {
+      return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+    }
+
+    // Check if user is admin
+    const admin = await db
+      .select()
+      .from(tournamentAdmins)
+      .where(
+        and(
+          eq(tournamentAdmins.tournamentId, id),
+          eq(tournamentAdmins.userId, user.id)
+        )
+      )
+      .limit(1);
+
+    if (admin.length === 0) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    }
+
+    // Verify team belongs to this tournament
+    const existingTeam = await db
+      .select()
+      .from(teams)
+      .where(and(eq(teams.id, teamId), eq(teams.tournamentId, id)))
+      .limit(1);
+
+    if (existingTeam.length === 0) {
+      return NextResponse.json({ error: "Team not found" }, { status: 404 });
+    }
+
+    // Update team
+    const updatedTeam = await db
+      .update(teams)
+      .set({
+        ...(name && { name }),
+        ...(color && { color }),
+        updatedAt: new Date(),
+      })
+      .where(eq(teams.id, teamId))
+      .returning();
+
+    return NextResponse.json({
+      success: true,
+      team: updatedTeam[0],
+    });
+  } catch (error) {
+    console.error("Update team error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// Delete team
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const teamId = searchParams.get("teamId");
+
+    if (!teamId) {
+      return NextResponse.json({ error: "Team ID is required" }, { status: 400 });
+    }
+
+    // Check if user is admin
+    const admin = await db
+      .select()
+      .from(tournamentAdmins)
+      .where(
+        and(
+          eq(tournamentAdmins.tournamentId, id),
+          eq(tournamentAdmins.userId, user.id)
+        )
+      )
+      .limit(1);
+
+    if (admin.length === 0) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    }
+
+    // Delete team members first
+    await db.delete(teamMembers).where(eq(teamMembers.teamId, teamId));
+    
+    // Delete team
+    await db.delete(teams).where(eq(teams.id, teamId));
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Delete team error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
 // Create team
 export async function POST(
   request: NextRequest,

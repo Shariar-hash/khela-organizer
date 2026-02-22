@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { db, tournamentAdmins, tournamentPlayers, teamMembers } from "@/lib/db";
+import { db, tournamentAdmins, tournamentPlayers, teamMembers, users } from "@/lib/db";
 import { eq, and } from "drizzle-orm";
 
-// Update player category
+// Update player (category by admin, or name by self or admin)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -16,7 +16,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { playerId, category } = body;
+    const { playerId, category, name } = body;
 
     // Check if user is admin
     const admin = await db
@@ -30,19 +30,63 @@ export async function PATCH(
       )
       .limit(1);
 
-    if (admin.length === 0) {
+    const isAdmin = admin.length > 0;
+
+    // Get the player
+    const player = await db
+      .select()
+      .from(tournamentPlayers)
+      .where(eq(tournamentPlayers.id, playerId))
+      .limit(1);
+
+    if (player.length === 0) {
+      return NextResponse.json({ error: "Player not found" }, { status: 404 });
+    }
+
+    // Check authorization:
+    // - Admin can update category and name
+    // - Player can only update their own name
+    const isSelf = player[0].userId === user.id;
+    
+    if (!isAdmin && !isSelf) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
+    // If not admin and trying to change category, deny
+    if (!isAdmin && category !== undefined) {
+      return NextResponse.json({ error: "Only admins can change category" }, { status: 403 });
+    }
+
+    // Update player category if admin
+    if (isAdmin && category !== undefined) {
+      await db
+        .update(tournamentPlayers)
+        .set({ category })
+        .where(eq(tournamentPlayers.id, playerId));
+    }
+
+    // Update user name if provided (player can rename self, admin can rename anyone)
+    if (name && (isSelf || isAdmin)) {
+      await db
+        .update(users)
+        .set({ name, updatedAt: new Date() })
+        .where(eq(users.id, player[0].userId));
+    }
+
+    // Get updated player info
     const updatedPlayer = await db
-      .update(tournamentPlayers)
-      .set({ category })
+      .select({
+        player: tournamentPlayers,
+        user: users,
+      })
+      .from(tournamentPlayers)
+      .innerJoin(users, eq(tournamentPlayers.userId, users.id))
       .where(eq(tournamentPlayers.id, playerId))
-      .returning();
+      .limit(1);
 
     return NextResponse.json({
       success: true,
-      player: updatedPlayer[0],
+      player: { ...updatedPlayer[0].player, user: updatedPlayer[0].user },
     });
   } catch (error) {
     console.error("Update player error:", error);
