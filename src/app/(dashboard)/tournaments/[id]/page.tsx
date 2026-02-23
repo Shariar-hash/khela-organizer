@@ -658,21 +658,23 @@ function PlayersTab({
               return (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between p-4 hover:bg-gray-50"
+                  className="p-3 sm:p-4 hover:bg-gray-50"
                 >
-                  <div className="flex items-center gap-3">
+                  {/* Mobile: Stack layout, Desktop: Row layout */}
+                  <div className="flex items-start sm:items-center gap-3">
                     <Avatar
                       name={player.user.name}
                       imageUrl={player.user.avatarUrl}
                       size="md"
+                      className="flex-shrink-0"
                     />
-                    <div>
+                    <div className="flex-1 min-w-0">
                       {editingPlayer === player.id ? (
                         <div className="flex items-center gap-2">
                           <Input
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="w-40"
+                            className="w-32 sm:w-40"
                             autoFocus
                             onKeyDown={(e) => {
                               if (e.key === "Enter") handleRenamePlayer(player.id);
@@ -699,61 +701,90 @@ function PlayersTab({
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{player.user.name}</p>
-                          {canEdit && (
-                            <button
-                              onClick={() => startEditing(player)}
-                              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-                              title={t.players.editName}
-                            >
-                              <Settings className="w-3 h-3" />
-                            </button>
-                          )}
-                          {isCreator && (
-                            <Badge variant="warning" size="sm">
-                              <Crown className="w-3 h-3 mr-1" />
-                              {t.tournament.creator}
-                            </Badge>
-                          )}
-                          {isAdmin && !isCreator && (
-                            <Badge variant="primary" size="sm">
-                              <Shield className="w-3 h-3 mr-1" />
-                              {t.tournament.admin}
-                            </Badge>
-                          )}
-                          {isSelf && !isAdmin && (
-                            <Badge variant="info" size="sm">You</Badge>
-                          )}
-                        </div>
+                        <>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="font-medium text-sm sm:text-base truncate max-w-[120px] sm:max-w-none">{player.user.name}</p>
+                            {canEdit && (
+                              <button
+                                onClick={() => startEditing(player)}
+                                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded flex-shrink-0"
+                                title={t.players.editName}
+                              >
+                                <Settings className="w-3 h-3" />
+                              </button>
+                            )}
+                            {isCreator && (
+                              <Badge variant="warning" size="sm">
+                                <Crown className="w-3 h-3 mr-0.5" />
+                                <span className="hidden sm:inline">{t.tournament.creator}</span>
+                              </Badge>
+                            )}
+                            {isAdmin && !isCreator && (
+                              <Badge variant="primary" size="sm">
+                                <Shield className="w-3 h-3 sm:mr-1" />
+                                <span className="hidden sm:inline">{t.tournament.admin}</span>
+                              </Badge>
+                            )}
+                            {isSelf && !isAdmin && (
+                              <Badge variant="info" size="sm">You</Badge>
+                            )}
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-500">{player.user.phone}</p>
+                        </>
                       )}
-                      <p className="text-sm text-gray-500">{player.user.phone}</p>
+                      
+                      {/* Category dropdown - Show on mobile below name */}
+                      <div className="flex items-center gap-2 mt-2 sm:hidden">
+                        {data.isAdmin && data.categories.length > 0 && (
+                          <Select
+                            options={[
+                              { value: "", label: t.players.category },
+                              ...data.categories.map((c) => ({ value: c.name, label: c.name })),
+                            ]}
+                            value={player.category || ""}
+                            onChange={(value) => handleUpdateCategory(player.id, value)}
+                            className="flex-1 text-sm"
+                          />
+                        )}
+                        {player.category && !data.isAdmin && (
+                          <Badge variant="info" size="sm">{player.category}</Badge>
+                        )}
+                        {data.isAdmin && !isCreator && (
+                          <button
+                            onClick={() => handleRemovePlayer(player.id)}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    {data.isAdmin && data.categories.length > 0 && (
-                      <Select
-                        options={[
-                          { value: "", label: t.players.category },
-                          ...data.categories.map((c) => ({ value: c.name, label: c.name })),
-                        ]}
-                        value={player.category || ""}
-                        onChange={(value) => handleUpdateCategory(player.id, value)}
-                        className="w-40"
-                      />
-                    )}
-                    {player.category && (
-                      <Badge variant="info">{player.category}</Badge>
-                    )}
-                    {data.isAdmin && !isCreator && (
-                      <button
-                        onClick={() => handleRemovePlayer(player.id)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    {/* Desktop: Actions on right side */}
+                    <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
+                      {data.isAdmin && data.categories.length > 0 && (
+                        <Select
+                          options={[
+                            { value: "", label: t.players.category },
+                            ...data.categories.map((c) => ({ value: c.name, label: c.name })),
+                          ]}
+                          value={player.category || ""}
+                          onChange={(value) => handleUpdateCategory(player.id, value)}
+                          className="w-36"
+                        />
+                      )}
+                      {player.category && !data.isAdmin && (
+                        <Badge variant="info">{player.category}</Badge>
+                      )}
+                      {data.isAdmin && !isCreator && (
+                        <button
+                          onClick={() => handleRemovePlayer(player.id)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -1797,122 +1828,116 @@ function RandomTeamsModal({
   t: Translations;
   onSuccess: () => void;
 }) {
-  const [step, setStep] = useState<'categories' | 'assign' | 'generate'>('categories');
+  const [mode, setMode] = useState<'select' | 'full' | 'categorized'>('select');
   const [numberOfTeams, setNumberOfTeams] = useState("2");
   const [loading, setLoading] = useState(false);
   
-  // Category names list
-  const [categoryNames, setCategoryNames] = useState<string[]>([]);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  
-  // Player assignments: categoryName -> player IDs
-  const [assignments, setAssignments] = useState<Record<string, string[]>>({});
-  const [currentCategory, setCurrentCategory] = useState<string | null>(null);
+  // Per category settings: how many players per team from each category
+  const [categoryPerTeam, setCategoryPerTeam] = useState<Record<string, number>>({});
 
   // Reset on open
   useEffect(() => {
     if (isOpen) {
-      setStep('categories');
+      setMode('select');
       setNumberOfTeams("2");
-      setCategoryNames([]);
-      setNewCategoryName("");
-      setAssignments({});
-      setCurrentCategory(null);
+      // Initialize categoryPerTeam with 1 for each category that has players
+      const initial: Record<string, number> = {};
+      playerCategories.forEach((playerIds, catName) => {
+        initial[catName] = 1;
+      });
+      setCategoryPerTeam(initial);
     }
   }, [isOpen]);
 
-  // All assigned player IDs
-  const assignedPlayerIds = useMemo(() => {
-    return new Set(Object.values(assignments).flat());
-  }, [assignments]);
-
-  // Available players (not yet assigned)
-  const availablePlayers = useMemo(() => {
-    return players.filter(p => !assignedPlayerIds.has(p.id));
-  }, [players, assignedPlayerIds]);
-
-  // Add category
-  const addCategory = () => {
-    const name = newCategoryName.trim();
-    if (!name || categoryNames.includes(name)) return;
-    setCategoryNames(prev => [...prev, name]);
-    setAssignments(prev => ({ ...prev, [name]: [] }));
-    setNewCategoryName("");
-  };
-
-  // Remove category
-  const removeCategory = (name: string) => {
-    setCategoryNames(prev => prev.filter(c => c !== name));
-    setAssignments(prev => {
-      const next = { ...prev };
-      delete next[name];
-      return next;
-    });
-    if (currentCategory === name) setCurrentCategory(null);
-  };
-
-  // Toggle player in category
-  const togglePlayer = (playerId: string) => {
-    if (!currentCategory) return;
-    setAssignments(prev => {
-      const current = prev[currentCategory] || [];
-      if (current.includes(playerId)) {
-        return { ...prev, [currentCategory]: current.filter(id => id !== playerId) };
-      } else {
-        return { ...prev, [currentCategory]: [...current, playerId] };
+  // Get unique categories from players that have categories assigned
+  const playerCategories = useMemo(() => {
+    const cats = new Map<string, string[]>();
+    players.forEach(p => {
+      if (p.category) {
+        if (!cats.has(p.category)) {
+          cats.set(p.category, []);
+        }
+        cats.get(p.category)!.push(p.id);
       }
     });
-  };
+    return cats;
+  }, [players]);
 
-  // Calculate distribution info
-  const distributionInfo = useMemo(() => {
+  const categorizedPlayersCount = useMemo(() => {
+    return players.filter(p => p.category).length;
+  }, [players]);
+
+  const uncategorizedPlayersCount = useMemo(() => {
+    return players.filter(p => !p.category).length;
+  }, [players]);
+
+  // Calculate distribution info for full random
+  const fullRandomInfo = useMemo(() => {
     const numTeams = parseInt(numberOfTeams) || 2;
-    const totalAssigned = assignedPlayerIds.size;
-    const unassigned = players.length - totalAssigned;
-    
-    const categoryBreakdown = categoryNames.map(name => ({
-      name,
-      count: assignments[name]?.length || 0,
-      perTeam: Math.floor((assignments[name]?.length || 0) / numTeams),
-    }));
+    const playersPerTeam = Math.floor(players.length / numTeams);
+    const remainder = players.length % numTeams;
+    return { numTeams, playersPerTeam, remainder };
+  }, [numberOfTeams, players.length]);
 
-    return { numTeams, totalAssigned, unassigned, categoryBreakdown };
-  }, [numberOfTeams, categoryNames, assignments, players.length, assignedPlayerIds.size]);
+  // Validation for categorized mode
+  const categorizedValidation = useMemo(() => {
+    const numTeams = parseInt(numberOfTeams) || 2;
+    const issues: string[] = [];
+    
+    playerCategories.forEach((playerIds, catName) => {
+      const perTeam = categoryPerTeam[catName] || 0;
+      const required = perTeam * numTeams;
+      if (required > playerIds.length) {
+        issues.push(`${catName}: Need ${required} but only have ${playerIds.length}`);
+      }
+    });
+
+    // Calculate total assigned from categories
+    let totalAssigned = 0;
+    playerCategories.forEach((playerIds, catName) => {
+      const perTeam = categoryPerTeam[catName] || 0;
+      totalAssigned += perTeam * numTeams;
+    });
+
+    return { 
+      issues, 
+      isValid: issues.length === 0 && numTeams >= 2,
+      totalAssigned,
+      remaining: players.length - totalAssigned
+    };
+  }, [numberOfTeams, playerCategories, categoryPerTeam, players.length]);
 
   // Submit - generate random teams
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // First update player categories
-      for (const categoryName of categoryNames) {
-        const playerIds = assignments[categoryName] || [];
-        for (const playerId of playerIds) {
-          await fetch(`/api/tournaments/${tournamentId}/players`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ playerId, category: categoryName }),
-          });
-        }
+      if (mode === 'full') {
+        // Full random - no categories
+        await fetch(`/api/tournaments/${tournamentId}/teams`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            numberOfTeams: parseInt(numberOfTeams), 
+            useCategories: false 
+          }),
+        });
+      } else {
+        // Categorized random - use category rules
+        const categoryRules: Record<string, { min: number }> = {};
+        playerCategories.forEach((_, categoryName) => {
+          categoryRules[categoryName] = { min: categoryPerTeam[categoryName] || 0 };
+        });
+
+        await fetch(`/api/tournaments/${tournamentId}/teams`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            numberOfTeams: parseInt(numberOfTeams),
+            useCategories: true,
+            categoryRules,
+          }),
+        });
       }
-
-      // Build category rules (1 per team for each category)
-      const categoryRules: Record<string, { min: number }> = {};
-      categoryNames.forEach(name => {
-        const count = assignments[name]?.length || 0;
-        const numTeams = parseInt(numberOfTeams) || 2;
-        categoryRules[name] = { min: Math.floor(count / numTeams) };
-      });
-
-      // Generate teams
-      await fetch(`/api/tournaments/${tournamentId}/teams`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          numberOfTeams: parseInt(numberOfTeams),
-          useCategories: categoryNames.length > 0,
-          categoryRules,
-        }),
-      });
 
       onSuccess();
       onClose();
@@ -1923,167 +1948,109 @@ function RandomTeamsModal({
     }
   };
 
-  // Step 1: Create Categories
-  if (step === 'categories') {
+  // Mode Selection Screen
+  if (mode === 'select') {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.createCategories || "Create Categories"} size="md">
+      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.randomMethod} size="md">
         <div className="space-y-4">
-          <p className="text-gray-600 text-sm">
-            {t.teams.categoriesHelp || "Create categories like Captain, Batsman, Bowler, etc. Players will be distributed evenly from each category."}
-          </p>
-
-          {/* Add Category Input */}
-          <div className="flex gap-2">
-            <Input
-              placeholder="e.g., Captain, Batsman, Bowler..."
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addCategory()}
-              className="flex-1"
-            />
-            <Button onClick={addCategory} disabled={!newCategoryName.trim()}>
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Category List */}
-          <div className="space-y-2 min-h-[120px]">
-            {categoryNames.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 bg-gray-50 rounded-xl">
-                <Layers className="w-8 h-8 text-gray-300 mb-2" />
-                <p className="text-gray-400 text-sm">Add categories above</p>
+          <p className="text-gray-600 text-sm">{t.teams.selectMode}</p>
+          
+          <button
+            onClick={() => setMode('full')}
+            className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <Shuffle className="w-6 h-6 text-primary-600" />
               </div>
-            ) : (
-              categoryNames.map((name, idx) => (
-                <div
-                  key={name}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-medium">
-                      {idx + 1}
-                    </span>
-                    <span className="font-medium text-gray-900">{name}</span>
-                  </div>
-                  <button
-                    onClick={() => removeCategory(name)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900">{t.teams.fullRandom}</h3>
+                <p className="text-sm text-gray-500">{t.teams.fullRandomDesc}</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            </div>
+          </button>
 
-          {/* Actions */}
-          <div className="flex justify-between pt-4 border-t">
-            <Button variant="ghost" onClick={onClose}>
-              {t.common.cancel}
-            </Button>
-            <Button 
-              onClick={() => setStep('assign')} 
-              disabled={categoryNames.length === 0}
-            >
-              {t.common.next || "Next"}
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
+          <button
+            onClick={() => setMode('categorized')}
+            disabled={categorizedPlayersCount === 0}
+            className={`w-full p-4 border-2 rounded-xl transition-all text-left ${
+              categorizedPlayersCount === 0 
+                ? 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                : 'border-gray-200 hover:border-accent-500 hover:bg-accent-50'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-accent-100 flex items-center justify-center flex-shrink-0">
+                <Layers className="w-6 h-6 text-accent-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900">{t.teams.categorizedRandom}</h3>
+                <p className="text-sm text-gray-500">
+                  {categorizedPlayersCount === 0 
+                    ? "Assign categories to players first in the Players tab"
+                    : t.teams.categorizedRandomDesc}
+                </p>
+                {categorizedPlayersCount > 0 && (
+                  <p className="text-xs text-accent-600 mt-1">
+                    {playerCategories.size} categories • {categorizedPlayersCount} players assigned
+                  </p>
+                )}
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            </div>
+          </button>
         </div>
       </Modal>
     );
   }
 
-  // Step 2: Assign Players to Categories
-  if (step === 'assign') {
+  // Full Random Screen
+  if (mode === 'full') {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.assignPlayers || "Assign Players"} size="lg">
-        <div className="space-y-4">
-          {/* Category Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {categoryNames.map(name => (
-              <button
-                key={name}
-                onClick={() => setCurrentCategory(name)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
-                  currentCategory === name
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {name}
-                <span className="ml-2 px-1.5 py-0.5 rounded-full bg-white/20 text-xs">
-                  {assignments[name]?.length || 0}
+      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.fullRandom} size="md">
+        <div className="space-y-5">
+          <Input
+            label={t.teams.numberOfTeams}
+            type="number"
+            value={numberOfTeams}
+            onChange={(e) => setNumberOfTeams(e.target.value)}
+            min="2"
+          />
+
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-600">{t.tournament.players}</span>
+              <span className="font-bold text-xl">{players.length}</span>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-600">{t.teams.title}</span>
+              <span className="font-bold text-xl">{numberOfTeams}</span>
+            </div>
+            <div className="border-t pt-2 mt-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">{t.teams.playersPerTeam}</span>
+                <span className="font-medium">
+                  ~{fullRandomInfo.playersPerTeam}
+                  {fullRandomInfo.remainder > 0 && <span className="text-gray-400"> (+{fullRandomInfo.remainder})</span>}
                 </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Player Selection */}
-          {currentCategory ? (
-            <div className="border rounded-xl divide-y max-h-[45vh] overflow-y-auto">
-              {players.map(player => {
-                const isAssigned = assignments[currentCategory]?.includes(player.id);
-                const isAssignedElsewhere = !isAssigned && assignedPlayerIds.has(player.id);
-                const assignedTo = isAssignedElsewhere 
-                  ? categoryNames.find(cat => assignments[cat]?.includes(player.id))
-                  : null;
-
-                return (
-                  <button
-                    key={player.id}
-                    onClick={() => !isAssignedElsewhere && togglePlayer(player.id)}
-                    disabled={isAssignedElsewhere}
-                    className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
-                      isAssigned 
-                        ? 'bg-primary-50' 
-                        : isAssignedElsewhere 
-                          ? 'bg-gray-50 opacity-50 cursor-not-allowed'
-                          : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                      isAssigned 
-                        ? 'bg-primary-600 border-primary-600' 
-                        : 'border-gray-300'
-                    }`}>
-                      {isAssigned && <Check className="w-3 h-3 text-white" />}
-                    </div>
-                    <Avatar name={player.user.name} imageUrl={player.user.avatarUrl} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{player.user.name}</p>
-                      {assignedTo && (
-                        <p className="text-xs text-gray-400">Already in {assignedTo}</p>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-xl">
-              <Users className="w-10 h-10 text-gray-300 mb-2" />
-              <p className="text-gray-500">Select a category above to assign players</p>
-            </div>
-          )}
-
-          {/* Summary */}
-          <div className="bg-gray-50 rounded-xl p-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Total Assigned:</span>
-              <span className="font-medium">{assignedPlayerIds.size} / {players.length}</span>
+              </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-between pt-2 border-t">
-            <Button variant="ghost" onClick={() => setStep('categories')}>
+          <div className="flex items-center gap-2 text-amber-600 bg-amber-50 rounded-lg p-3 text-sm">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <span>{t.teams.warningDeleteExisting}</span>
+          </div>
+
+          <div className="flex gap-3 justify-between">
+            <Button variant="ghost" onClick={() => setMode('select')}>
               <ChevronLeft className="w-4 h-4 mr-1" />
               {t.common.back}
             </Button>
-            <Button onClick={() => setStep('generate')}>
-              {t.common.next || "Next"}
-              <ChevronRight className="w-4 h-4 ml-1" />
+            <Button onClick={handleSubmit} loading={loading} disabled={players.length < 2}>
+              <Shuffle className="w-4 h-4 mr-2" />
+              {t.teams.randomShuffle || "Random Shuffle"}
             </Button>
           </div>
         </div>
@@ -2091,9 +2058,9 @@ function RandomTeamsModal({
     );
   }
 
-  // Step 3: Generate Teams
+  // Categorized Random Screen - Configure per-team counts for each category
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t.teams.generateTeams || "Generate Teams"} size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title={t.teams.categorizedRandom} size="lg">
       <div className="space-y-4">
         {/* Number of Teams */}
         <Input
@@ -2104,26 +2071,90 @@ function RandomTeamsModal({
           min="2"
         />
 
-        {/* Distribution Preview */}
-        <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-          <h4 className="font-medium text-gray-900 text-sm">{t.teams.distributionPreview || "Distribution Preview"}</h4>
+        {/* Category Configuration */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            {t.teams.categoryRules || "Players per team from each category"}
+          </label>
           
-          {distributionInfo.categoryBreakdown.map(cat => (
-            <div key={cat.name} className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">{cat.name}</span>
-              <span className="font-medium">
-                {cat.count} players → ~{cat.perTeam} per team
-              </span>
-            </div>
-          ))}
+          <div className="space-y-3">
+            {Array.from(playerCategories.entries()).map(([catName, playerIds]) => {
+              const perTeam = categoryPerTeam[catName] || 0;
+              const numTeams = parseInt(numberOfTeams) || 2;
+              const required = perTeam * numTeams;
+              const hasError = required > playerIds.length;
 
-          {distributionInfo.unassigned > 0 && (
-            <div className="flex items-center justify-between text-sm pt-2 border-t">
-              <span className="text-gray-500">Unassigned players</span>
-              <span className="text-gray-500">{distributionInfo.unassigned} (will be distributed randomly)</span>
+              return (
+                <div 
+                  key={catName} 
+                  className={`p-3 rounded-xl border ${hasError ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-gray-50'}`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="info">{catName}</Badge>
+                        <span className="text-sm text-gray-500">
+                          {playerIds.length} {t.tournament.players}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600 whitespace-nowrap">{t.teams.perTeam}:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max={Math.floor(playerIds.length / (parseInt(numberOfTeams) || 2))}
+                        value={perTeam}
+                        onChange={(e) => setCategoryPerTeam(prev => ({
+                          ...prev,
+                          [catName]: parseInt(e.target.value) || 0
+                        }))}
+                        className="w-16 text-center border rounded-lg px-2 py-1.5 text-sm"
+                      />
+                    </div>
+                  </div>
+                  
+                  {hasError && (
+                    <p className="text-xs text-red-600 mt-2">
+                      Need {required} players but only {playerIds.length} available
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Total from categories:</span>
+            <span className="font-medium">{categorizedValidation.totalAssigned}</span>
+          </div>
+          {uncategorizedPlayersCount > 0 && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Uncategorized players:</span>
+              <span className="font-medium">{uncategorizedPlayersCount} (distributed randomly)</span>
             </div>
           )}
+          <div className="flex justify-between pt-2 border-t">
+            <span className="text-gray-700 font-medium">Total per team:</span>
+            <span className="font-bold">
+              ~{Math.floor(players.length / (parseInt(numberOfTeams) || 2))}
+            </span>
+          </div>
         </div>
+
+        {/* Validation Errors */}
+        {categorizedValidation.issues.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <p className="text-red-700 font-medium text-sm mb-1">{t.teams.validationError}</p>
+            <ul className="text-sm text-red-600 list-disc list-inside">
+              {categorizedValidation.issues.map((issue, i) => <li key={i}>{issue}</li>)}
+            </ul>
+          </div>
+        )}
 
         {/* Warning */}
         <div className="flex items-center gap-2 text-amber-600 bg-amber-50 rounded-lg p-3 text-sm">
@@ -2133,11 +2164,15 @@ function RandomTeamsModal({
 
         {/* Actions */}
         <div className="flex justify-between pt-2 border-t">
-          <Button variant="ghost" onClick={() => setStep('assign')}>
+          <Button variant="ghost" onClick={() => setMode('select')}>
             <ChevronLeft className="w-4 h-4 mr-1" />
             {t.common.back}
           </Button>
-          <Button onClick={handleSubmit} loading={loading}>
+          <Button 
+            onClick={handleSubmit} 
+            loading={loading}
+            disabled={!categorizedValidation.isValid}
+          >
             <Shuffle className="w-4 h-4 mr-2" />
             {t.teams.randomShuffle || "Random Shuffle"}
           </Button>
