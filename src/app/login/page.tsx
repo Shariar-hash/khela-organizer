@@ -189,7 +189,18 @@ export default function LoginPage() {
 
       {/* Footer */}
       <footer className="p-4 text-center text-sm text-gray-500">
-        © 2026 Khela Organizer. All rights reserved.
+        <p>© 2026 Khela Organizer. All rights reserved.</p>
+        <p className="mt-1">
+          Built with ❤️ by{" "}
+          <a
+            href="https://montasir-mogumder-shariar.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+          >
+            Montasir Mogumder Shariar
+          </a>
+        </p>
       </footer>
     </div>
   );

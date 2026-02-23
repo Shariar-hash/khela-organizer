@@ -113,6 +113,21 @@ export function Sidebar({ user }: SidebarProps) {
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <div className="px-4 py-3 border-t border-gray-100 text-center">
+        <p className="text-xs text-gray-400">
+          Built with ❤️ by{" "}
+          <a
+            href="https://montasir-mogumder-shariar.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-500 hover:text-primary-600 font-medium transition-colors"
+          >
+            Shariar
+          </a>
+        </p>
+      </div>
     </>
   );
 

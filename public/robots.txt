@@ -1,0 +1,11 @@
+# Robots.txt for Khela Organizer
+# https://khela-organizer.vercel.app
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://khela-organizer.vercel.app/sitemap.xml
+
+# Disallow API routes
+Disallow: /api/
