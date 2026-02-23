@@ -180,6 +180,10 @@ export const translations = {
     players: {
       title: "Players",
       addPlayer: "Add Player",
+      addManualPlayer: "Add Manual Player",
+      playerName: "Player Name",
+      playerPhone: "Phone (optional)",
+      manualPlayerAdded: "Player added successfully",
       removePlayer: "Remove Player",
       playerList: "Player List",
       searchPlayers: "Search players...",
@@ -193,6 +197,7 @@ export const translations = {
       editName: "Edit Name",
       playerRenamed: "Name updated successfully",
       yourName: "Your Name",
+      manualPlayer: "Manual",
     },
 
     // Categories
@@ -243,6 +248,8 @@ export const translations = {
     profile: {
       title: "Profile",
       editProfile: "Edit Profile",
+      saveName: "Save Name",
+      nameUpdated: "Name updated successfully",
       myTournaments: "My Tournaments",
       myTeams: "My Teams",
       memberSince: "Member since",
@@ -453,6 +460,10 @@ export const translations = {
     players: {
       title: "খেলোয়াড়",
       addPlayer: "খেলোয়াড় যোগ করুন",
+      addManualPlayer: "ম্যানুয়াল খেলোয়াড় যোগ করুন",
+      playerName: "খেলোয়াড়ের নাম",
+      playerPhone: "ফোন (ঐচ্ছিক)",
+      manualPlayerAdded: "খেলোয়াড় সফলভাবে যোগ হয়েছে",
       removePlayer: "খেলোয়াড় সরান",
       playerList: "খেলোয়াড় তালিকা",
       searchPlayers: "খেলোয়াড় খুঁজুন...",
@@ -466,6 +477,7 @@ export const translations = {
       editName: "নাম সম্পাদনা করুন",
       playerRenamed: "নাম সফলভাবে আপডেট হয়েছে",
       yourName: "আপনার নাম",
+      manualPlayer: "ম্যানুয়াল",
     },
 
     // Categories
@@ -516,6 +528,8 @@ export const translations = {
     profile: {
       title: "প্রোফাইল",
       editProfile: "প্রোফাইল সম্পাদনা",
+      saveName: "নাম সংরক্ষণ করুন",
+      nameUpdated: "নাম সফলভাবে আপডেট হয়েছে",
       myTournaments: "আমার টুর্নামেন্ট",
       myTeams: "আমার দল",
       memberSince: "সদস্য থেকে",

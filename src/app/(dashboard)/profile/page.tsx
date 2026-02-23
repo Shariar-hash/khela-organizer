@@ -11,8 +11,10 @@ import {
   Avatar,
   Badge,
   Loader,
+  Button,
+  Input,
 } from "@/components/ui";
-import { Trophy, Calendar, Users, Hash } from "lucide-react";
+import { Trophy, Calendar, Users, Hash, Edit2, Check, X } from "lucide-react";
 
 interface UserData {
   user: {
@@ -39,6 +41,11 @@ export default function ProfilePage() {
     created: Tournament[];
     joined: Tournament[];
   }>({ created: [], joined: [] });
+  
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -63,6 +70,42 @@ export default function ProfilePage() {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const startEditing = () => {
+    if (user) {
+      setEditName(user.name);
+      setIsEditing(true);
+    }
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditName("");
+  };
+
+  const saveName = async () => {
+    if (!editName.trim() || !user) return;
+    
+    setSaving(true);
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: editName.trim() }),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+        setIsEditing(false);
+        setEditName("");
+      }
+    } catch (error) {
+      console.error("Error updating name:", error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -97,8 +140,54 @@ export default function ProfilePage() {
               size="xl"
               className="mx-auto mb-4"
             />
-            <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
-            <p className="text-gray-500 mb-4">{user.phone}</p>
+            
+            {isEditing ? (
+              <div className="space-y-3">
+                <Input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder={t.players.yourName}
+                  className="text-center"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveName();
+                    if (e.key === "Escape") cancelEditing();
+                  }}
+                />
+                <div className="flex justify-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={saveName}
+                    disabled={saving || !editName.trim()}
+                  >
+                    <Check className="w-4 h-4 mr-1" />
+                    {t.common.save}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={cancelEditing}
+                    disabled={saving}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    {t.common.cancel}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
+                <button
+                  onClick={startEditing}
+                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                  title={t.profile.editProfile}
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            
+            <p className="text-gray-500 mb-4 mt-1">{user.phone}</p>
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
               <Calendar className="w-4 h-4" />
               <span>

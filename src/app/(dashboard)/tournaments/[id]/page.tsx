@@ -67,9 +67,10 @@ interface TournamentData {
   }>;
   players: Array<{
     id: string;
-    userId: string;
+    userId: string | null;
     category?: string;
     user: { id: string; name: string; phone: string; avatarUrl?: string };
+    isManualPlayer?: boolean;
   }>;
   teams: Array<{
     id: string;
@@ -549,6 +550,12 @@ function PlayersTab({
 }) {
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  
+  // Add player state
+  const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [newPlayerName, setNewPlayerName] = useState("");
+  const [newPlayerPhone, setNewPlayerPhone] = useState("");
+  const [addingPlayer, setAddingPlayer] = useState(false);
 
   // Optimistic remove player
   const handleRemovePlayer = async (playerId: string) => {
@@ -629,6 +636,40 @@ function PlayersTab({
     setEditName(player.user.name);
   };
 
+  // Add manual player handler
+  const handleAddManualPlayer = async () => {
+    if (!newPlayerName.trim()) return;
+    
+    setAddingPlayer(true);
+    try {
+      const res = await fetch(`/api/tournaments/${data.tournament.id}/players`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newPlayerName.trim(),
+          phone: newPlayerPhone.trim() || null,
+        }),
+      });
+      
+      if (res.ok) {
+        const result = await res.json();
+        // Add new player to data
+        onUpdateData(prev => ({
+          ...prev,
+          players: [...prev.players, result.player],
+        }));
+        // Reset form
+        setNewPlayerName("");
+        setNewPlayerPhone("");
+        setShowAddPlayer(false);
+      }
+    } catch (error) {
+      console.error("Error adding player:", error);
+    } finally {
+      setAddingPlayer(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -639,10 +680,64 @@ function PlayersTab({
           leftIcon={<Search size={20} />}
           className="max-w-md"
         />
-        <p className="text-gray-500">
-          {filteredPlayers.length} {t.players.playerCount}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-gray-500">
+            {filteredPlayers.length} {t.players.playerCount}
+          </p>
+          {data.isAdmin && (
+            <Button
+              size="sm"
+              onClick={() => setShowAddPlayer(!showAddPlayer)}
+              variant={showAddPlayer ? "ghost" : "primary"}
+            >
+              {showAddPlayer ? <X className="w-4 h-4 mr-1" /> : <UserPlus className="w-4 h-4 mr-1" />}
+              {showAddPlayer ? t.common.cancel : t.players.addPlayer}
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Add Manual Player Form */}
+      {showAddPlayer && data.isAdmin && (
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="font-medium text-gray-900 mb-3">{t.players.addManualPlayer}</h3>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input
+                placeholder={t.players.playerName}
+                value={newPlayerName}
+                onChange={(e) => setNewPlayerName(e.target.value)}
+                className="flex-1"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newPlayerName.trim()) handleAddManualPlayer();
+                  if (e.key === "Escape") {
+                    setShowAddPlayer(false);
+                    setNewPlayerName("");
+                    setNewPlayerPhone("");
+                  }
+                }}
+              />
+              <Input
+                placeholder={t.players.playerPhone}
+                value={newPlayerPhone}
+                onChange={(e) => setNewPlayerPhone(e.target.value)}
+                className="flex-1 sm:max-w-[200px]"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newPlayerName.trim()) handleAddManualPlayer();
+                }}
+              />
+              <Button
+                onClick={handleAddManualPlayer}
+                disabled={addingPlayer || !newPlayerName.trim()}
+              >
+                {addingPlayer ? <Loader size="sm" /> : <Plus className="w-4 h-4 mr-1" />}
+                {t.common.create}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardContent className="p-0">
@@ -727,6 +822,12 @@ function PlayersTab({
                             )}
                             {isSelf && !isAdmin && (
                               <Badge variant="info" size="sm">You</Badge>
+                            )}
+                            {player.isManualPlayer && (
+                              <Badge variant="default" size="sm">
+                                <UserPlus className="w-3 h-3 sm:mr-1" />
+                                <span className="hidden sm:inline">{t.players.manualPlayer}</span>
+                              </Badge>
                             )}
                           </div>
                           <p className="text-xs sm:text-sm text-gray-500">{player.user.phone}</p>
@@ -1655,7 +1756,7 @@ function AddAdminModal({
   const [loading, setLoading] = useState(false);
 
   const nonAdminPlayers = players.filter(
-    (p) => !admins.some((a) => a.userId === p.userId)
+    (p) => p.userId && !admins.some((a) => a.userId === p.userId)
   );
 
   const handleSubmit = async () => {
@@ -1684,7 +1785,7 @@ function AddAdminModal({
         <Select
           label={t.players.title}
           options={nonAdminPlayers.map((p) => ({
-            value: p.userId,
+            value: p.userId!,
             label: p.user.name,
           }))}
           value={selectedUser}

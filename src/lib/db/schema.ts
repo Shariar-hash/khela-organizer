@@ -51,7 +51,10 @@ export const tournamentAdmins = pgTable("tournament_admins", {
 export const tournamentPlayers = pgTable("tournament_players", {
   id: uuid("id").defaultRandom().primaryKey(),
   tournamentId: uuid("tournament_id").references(() => tournaments.id, { onDelete: "cascade" }).notNull(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }), // Nullable for manual/guest players
+  // Manual player fields (used when userId is null)
+  name: varchar("name", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
   category: varchar("category", { length: 100 }), // e.g., "Premium Bowler", "Batsman", "Beginner"
   customFields: jsonb("custom_fields"), // For additional player data
   joinedAt: timestamp("joined_at").defaultNow().notNull(),

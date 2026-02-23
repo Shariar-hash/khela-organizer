@@ -40,10 +40,10 @@ export async function GET(
         .from(tournamentAdmins)
         .innerJoin(users, eq(tournamentAdmins.userId, users.id))
         .where(eq(tournamentAdmins.tournamentId, id)),
-      // Get players
+      // Get players (include manual players with leftJoin)
       db.select({ player: tournamentPlayers, user: users })
         .from(tournamentPlayers)
-        .innerJoin(users, eq(tournamentPlayers.userId, users.id))
+        .leftJoin(users, eq(tournamentPlayers.userId, users.id))
         .where(eq(tournamentPlayers.tournamentId, id)),
       // Get teams
       db.select().from(teams).where(eq(teams.tournamentId, id)),
@@ -66,7 +66,7 @@ export async function GET(
     }
 
     // Get all team members in one query if there are teams
-    let teamsWithMembers: Array<typeof tournamentTeamsResult[0] & { members: Array<{ member: typeof teamMembers.$inferSelect; player: typeof tournamentPlayers.$inferSelect; user: typeof users.$inferSelect }> }> = [];
+    let teamsWithMembers: Array<typeof tournamentTeamsResult[0] & { members: Array<{ member: typeof teamMembers.$inferSelect; player: typeof tournamentPlayers.$inferSelect; user: typeof users.$inferSelect | null }> }> = [];
     if (tournamentTeamsResult.length > 0) {
       const teamIds = tournamentTeamsResult.map(t => t.id);
       const allMembers = await db
@@ -77,7 +77,7 @@ export async function GET(
         })
         .from(teamMembers)
         .innerJoin(tournamentPlayers, eq(teamMembers.playerId, tournamentPlayers.id))
-        .innerJoin(users, eq(tournamentPlayers.userId, users.id))
+        .leftJoin(users, eq(tournamentPlayers.userId, users.id))
         .where(inArray(teamMembers.teamId, teamIds));
 
       // Group members by team
@@ -99,11 +99,37 @@ export async function GET(
     // Check if current user is admin
     const isAdmin = adminsResult.some(a => a.user.id === user.id);
 
+    // Transform players to handle manual players (no user account)
+    const transformedPlayers = playersResult.map(p => ({
+      ...p.player,
+      user: p.user ? p.user : {
+        id: p.player.id, // Use player id as pseudo user id
+        name: p.player.name || "Unknown",
+        phone: p.player.phone || "",
+        avatarUrl: null,
+      },
+      isManualPlayer: !p.player.userId,
+    }));
+
+    // Transform teams to handle manual players
+    const transformedTeams = teamsWithMembers.map(team => ({
+      ...team,
+      members: team.members.map(m => ({
+        member: m.member,
+        player: m.player,
+        user: m.user ? m.user : {
+          id: m.player.id,
+          name: m.player.name || "Unknown",
+          avatarUrl: null,
+        },
+      })),
+    }));
+
     return NextResponse.json({
       tournament: tournamentResult[0],
       admins: adminsResult.map(a => ({ ...a.admin, user: a.user })),
-      players: playersResult.map(p => ({ ...p.player, user: p.user })),
-      teams: teamsWithMembers,
+      players: transformedPlayers,
+      teams: transformedTeams,
       announcements: announcementsResult.map(a => ({ ...a.announcement, author: a.author })),
       categories: categoriesResult,
       isAdmin,
