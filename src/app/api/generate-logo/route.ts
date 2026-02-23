@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,56 +20,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const genAI = new GoogleGenerativeAI(apiKey.trim());
+    
+    // Use Gemini 2.0 Flash with image generation capability
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash-exp-image-generation",
+      generationConfig: {
+        responseModalities: ["TEXT", "IMAGE"],
+      } as any,
+    });
+
     // Build the prompt for logo generation
     const imagePrompt = prompt || 
       `Create a professional sports tournament logo for "${tournamentName || 'Tournament'}". 
        Modern, clean design with bold colors. Sports themed.
        Simple iconic design suitable for a tournament badge or team logo.
-       High quality, vector-style logo on transparent or solid background.`;
+       High quality logo on a clean background.`;
 
-    // Use Imagen 3 via REST API
-    const imagenResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey.trim()}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          instances: [{ prompt: imagePrompt }],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: "1:1",
-            personGeneration: "dont_allow",
-            safetySetting: "block_medium_and_above",
-          },
-        }),
-      }
-    );
-
-    if (!imagenResponse.ok) {
-      const errorData = await imagenResponse.json().catch(() => ({}));
-      console.error("Imagen API error:", imagenResponse.status, errorData);
-      throw new Error(`Imagen API error: ${imagenResponse.status}`);
-    }
-
-    const imagenData = await imagenResponse.json();
+    const result = await model.generateContent(imagePrompt);
+    const response = result.response;
     
-    // Extract the generated image
-    const predictions = imagenData.predictions || [];
-    if (predictions.length > 0 && predictions[0].bytesBase64Encoded) {
-      const base64Image = predictions[0].bytesBase64Encoded;
-      const imageUrl = `data:image/png;base64,${base64Image}`;
-      
-      return NextResponse.json({
-        success: true,
-        description: `AI-generated logo for ${tournamentName || "Tournament"}`,
-        imageUrl,
-        logoSvg: null,
-      });
+    // Extract image and text from response
+    let imageUrl = "";
+    let description = "";
+    
+    const parts = response.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
+      if ((part as any).inlineData) {
+        const inlineData = (part as any).inlineData;
+        imageUrl = `data:${inlineData.mimeType};base64,${inlineData.data}`;
+      }
+      if ((part as any).text) {
+        description = (part as any).text;
+      }
     }
 
-    throw new Error("No image generated");
+    if (!imageUrl) {
+      throw new Error("No image generated");
+    }
+
+    return NextResponse.json({
+      success: true,
+      description: description || `AI-generated logo for ${tournamentName || "Tournament"}`,
+      imageUrl,
+    });
   } catch (error: unknown) {
     console.error("Logo generation error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
