@@ -243,77 +243,77 @@ export default function TournamentDashboardPage({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-4 py-2">
-              <Hash className="w-4 h-4 text-gray-500" />
-              <span className="font-mono font-semibold">{data.tournament.code}</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1 sm:gap-2 bg-gray-100 rounded-xl px-2 sm:px-4 py-2">
+              <Hash className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+              <span className="font-mono font-semibold text-sm sm:text-base">{data.tournament.code}</span>
               <button
                 onClick={copyCode}
                 className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
               >
-                <Copy className="w-4 h-4 text-gray-500" />
+                <Copy className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
               </button>
             </div>
             {copied && (
-              <span className="text-sm text-green-600">{t.common.copied}</span>
+              <span className="text-xs sm:text-sm text-green-600">{t.common.copied}</span>
             )}
           </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{data.players.length}</p>
-                <p className="text-sm text-gray-500">{t.tournament.players}</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.players.length}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.tournament.players}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-accent-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-accent-100 flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-accent-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{data.teams.length}</p>
-                <p className="text-sm text-gray-500">{t.tournament.teams}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                <Bell className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{data.announcements.length}</p>
-                <p className="text-sm text-gray-500">{t.announcements.title}</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.teams.length}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.tournament.teams}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center">
-                <Crown className="w-5 h-5 text-yellow-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{data.admins.length}</p>
-                <p className="text-sm text-gray-500">{t.admin.title}</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.announcements.length}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.announcements.title}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.admins.length}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.admin.title}</p>
               </div>
             </div>
           </CardContent>
@@ -1797,242 +1797,293 @@ function RandomTeamsModal({
   t: Translations;
   onSuccess: () => void;
 }) {
-  // Mode: 'select' | 'full' | 'categorized'
-  const [mode, setMode] = useState<'select' | 'full' | 'categorized'>('select');
+  const [step, setStep] = useState<'categories' | 'assign' | 'generate'>('categories');
   const [numberOfTeams, setNumberOfTeams] = useState("2");
   const [loading, setLoading] = useState(false);
   
-  // Category cards state
-  const [categoryCards, setCategoryCards] = useState<Array<{
-    id: string;
-    name: string;
-    perTeam: number;
-    playerIds: string[];
-  }>>([]);
+  // Category names list
+  const [categoryNames, setCategoryNames] = useState<string[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [showPlayerPickerFor, setShowPlayerPickerFor] = useState<string | null>(null);
+  
+  // Player assignments: categoryName -> player IDs
+  const [assignments, setAssignments] = useState<Record<string, string[]>>({});
+  const [currentCategory, setCurrentCategory] = useState<string | null>(null);
 
   // Reset on open
   useEffect(() => {
     if (isOpen) {
-      setMode('select');
+      setStep('categories');
       setNumberOfTeams("2");
-      setCategoryCards([]);
+      setCategoryNames([]);
       setNewCategoryName("");
-      setShowPlayerPickerFor(null);
+      setAssignments({});
+      setCurrentCategory(null);
     }
   }, [isOpen]);
 
-  // Players already assigned to a category
+  // All assigned player IDs
   const assignedPlayerIds = useMemo(() => {
-    return new Set(categoryCards.flatMap(c => c.playerIds));
-  }, [categoryCards]);
+    return new Set(Object.values(assignments).flat());
+  }, [assignments]);
 
-  // Available players for picker
+  // Available players (not yet assigned)
   const availablePlayers = useMemo(() => {
     return players.filter(p => !assignedPlayerIds.has(p.id));
   }, [players, assignedPlayerIds]);
 
-  // Validation
-  const validation = useMemo(() => {
-    const numTeams = parseInt(numberOfTeams) || 2;
-    const issues: string[] = [];
-
-    if (mode === 'categorized') {
-      categoryCards.forEach(card => {
-        const required = card.perTeam * numTeams;
-        if (required > card.playerIds.length) {
-          issues.push(`${card.name}: ${t.teams.need} ${required}, ${t.teams.have} ${card.playerIds.length}`);
-        }
-      });
-    }
-
-    const playersPerTeam = Math.floor(players.length / numTeams);
-    const remainder = players.length % numTeams;
-
-    return {
-      issues,
-      playersPerTeam,
-      remainder,
-      isValid: issues.length === 0 && numTeams >= 2 && players.length >= numTeams,
-    };
-  }, [mode, numberOfTeams, categoryCards, players.length, t]);
-
-  // Add category card
-  const addCategoryCard = () => {
-    if (!newCategoryName.trim()) return;
-    setCategoryCards(prev => [...prev, {
-      id: `cat-${Date.now()}`,
-      name: newCategoryName.trim(),
-      perTeam: 1,
-      playerIds: [],
-    }]);
+  // Add category
+  const addCategory = () => {
+    const name = newCategoryName.trim();
+    if (!name || categoryNames.includes(name)) return;
+    setCategoryNames(prev => [...prev, name]);
+    setAssignments(prev => ({ ...prev, [name]: [] }));
     setNewCategoryName("");
   };
 
-  // Remove category card
-  const removeCategoryCard = (cardId: string) => {
-    setCategoryCards(prev => prev.filter(c => c.id !== cardId));
-    if (showPlayerPickerFor === cardId) setShowPlayerPickerFor(null);
+  // Remove category
+  const removeCategory = (name: string) => {
+    setCategoryNames(prev => prev.filter(c => c !== name));
+    setAssignments(prev => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+    if (currentCategory === name) setCurrentCategory(null);
   };
 
-  // Update per team count
-  const updatePerTeam = (cardId: string, value: number) => {
-    setCategoryCards(prev => prev.map(c => 
-      c.id === cardId ? { ...c, perTeam: Math.max(1, value) } : c
-    ));
+  // Toggle player in category
+  const togglePlayer = (playerId: string) => {
+    if (!currentCategory) return;
+    setAssignments(prev => {
+      const current = prev[currentCategory] || [];
+      if (current.includes(playerId)) {
+        return { ...prev, [currentCategory]: current.filter(id => id !== playerId) };
+      } else {
+        return { ...prev, [currentCategory]: [...current, playerId] };
+      }
+    });
   };
 
-  // Add player to category
-  const addPlayerToCategory = (cardId: string, playerId: string) => {
-    setCategoryCards(prev => prev.map(c => 
-      c.id === cardId ? { ...c, playerIds: [...c.playerIds, playerId] } : c
-    ));
-  };
+  // Calculate distribution info
+  const distributionInfo = useMemo(() => {
+    const numTeams = parseInt(numberOfTeams) || 2;
+    const totalAssigned = assignedPlayerIds.size;
+    const unassigned = players.length - totalAssigned;
+    
+    const categoryBreakdown = categoryNames.map(name => ({
+      name,
+      count: assignments[name]?.length || 0,
+      perTeam: Math.floor((assignments[name]?.length || 0) / numTeams),
+    }));
 
-  // Remove player from category
-  const removePlayerFromCategory = (cardId: string, playerId: string) => {
-    setCategoryCards(prev => prev.map(c => 
-      c.id === cardId ? { ...c, playerIds: c.playerIds.filter(id => id !== playerId) } : c
-    ));
-  };
+    return { numTeams, totalAssigned, unassigned, categoryBreakdown };
+  }, [numberOfTeams, categoryNames, assignments, players.length, assignedPlayerIds.size]);
 
-  // Submit
+  // Submit - generate random teams
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      if (mode === 'full') {
-        await fetch(`/api/tournaments/${tournamentId}/teams`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ numberOfTeams: parseInt(numberOfTeams), useCategories: false }),
-        });
-      } else {
-        // Update players with categories
-        for (const card of categoryCards) {
-          for (const playerId of card.playerIds) {
-            await fetch(`/api/tournaments/${tournamentId}/players`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ playerId, category: card.name }),
-            });
-          }
+      // First update player categories
+      for (const categoryName of categoryNames) {
+        const playerIds = assignments[categoryName] || [];
+        for (const playerId of playerIds) {
+          await fetch(`/api/tournaments/${tournamentId}/players`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ playerId, category: categoryName }),
+          });
         }
-
-        // Build rules
-        const categoryRules: Record<string, { min: number }> = {};
-        categoryCards.forEach(card => {
-          categoryRules[card.name] = { min: card.perTeam };
-        });
-
-        await fetch(`/api/tournaments/${tournamentId}/teams`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            numberOfTeams: parseInt(numberOfTeams),
-            useCategories: true,
-            categoryRules,
-          }),
-        });
       }
+
+      // Build category rules (1 per team for each category)
+      const categoryRules: Record<string, { min: number }> = {};
+      categoryNames.forEach(name => {
+        const count = assignments[name]?.length || 0;
+        const numTeams = parseInt(numberOfTeams) || 2;
+        categoryRules[name] = { min: Math.floor(count / numTeams) };
+      });
+
+      // Generate teams
+      await fetch(`/api/tournaments/${tournamentId}/teams`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          numberOfTeams: parseInt(numberOfTeams),
+          useCategories: categoryNames.length > 0,
+          categoryRules,
+        }),
+      });
+
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error generating teams:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Mode Selection Screen
-  if (mode === 'select') {
+  // Step 1: Create Categories
+  if (step === 'categories') {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.randomMethod} size="md">
+      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.createCategories || "Create Categories"} size="md">
         <div className="space-y-4">
-          <p className="text-gray-600 text-sm">{t.teams.selectMode}</p>
-          
-          <button
-            onClick={() => setMode('full')}
-            className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-primary-500 hover:bg-primary-50 transition-all text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center">
-                <Shuffle className="w-6 h-6 text-primary-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{t.teams.fullRandom}</h3>
-                <p className="text-sm text-gray-500">{t.teams.fullRandomDesc}</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </div>
-          </button>
+          <p className="text-gray-600 text-sm">
+            {t.teams.categoriesHelp || "Create categories like Captain, Batsman, Bowler, etc. Players will be distributed evenly from each category."}
+          </p>
 
-          <button
-            onClick={() => setMode('categorized')}
-            className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-accent-500 hover:bg-accent-50 transition-all text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-accent-100 flex items-center justify-center">
-                <Layers className="w-6 h-6 text-accent-600" />
+          {/* Add Category Input */}
+          <div className="flex gap-2">
+            <Input
+              placeholder="e.g., Captain, Batsman, Bowler..."
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addCategory()}
+              className="flex-1"
+            />
+            <Button onClick={addCategory} disabled={!newCategoryName.trim()}>
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Category List */}
+          <div className="space-y-2 min-h-[120px]">
+            {categoryNames.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 bg-gray-50 rounded-xl">
+                <Layers className="w-8 h-8 text-gray-300 mb-2" />
+                <p className="text-gray-400 text-sm">Add categories above</p>
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{t.teams.categorizedRandom}</h3>
-                <p className="text-sm text-gray-500">{t.teams.categorizedRandomDesc}</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </div>
-          </button>
+            ) : (
+              categoryNames.map((name, idx) => (
+                <div
+                  key={name}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-medium">
+                      {idx + 1}
+                    </span>
+                    <span className="font-medium text-gray-900">{name}</span>
+                  </div>
+                  <button
+                    onClick={() => removeCategory(name)}
+                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-between pt-4 border-t">
+            <Button variant="ghost" onClick={onClose}>
+              {t.common.cancel}
+            </Button>
+            <Button 
+              onClick={() => setStep('assign')} 
+              disabled={categoryNames.length === 0}
+            >
+              {t.common.next || "Next"}
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
         </div>
       </Modal>
     );
   }
 
-  // Full Random Screen
-  if (mode === 'full') {
+  // Step 2: Assign Players to Categories
+  if (step === 'assign') {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.fullRandom} size="md">
-        <div className="space-y-5">
-          <Input
-            label={t.teams.numberOfTeams}
-            type="number"
-            value={numberOfTeams}
-            onChange={(e) => setNumberOfTeams(e.target.value)}
-            min="2"
-          />
-
-          <div className="bg-gray-50 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-600">{t.tournament.players}</span>
-              <span className="font-bold text-xl">{players.length}</span>
-            </div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-600">{t.teams.title}</span>
-              <span className="font-bold text-xl">{numberOfTeams}</span>
-            </div>
-            <div className="border-t pt-2 mt-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">{t.teams.playersPerTeam}</span>
-                <span className="font-medium">
-                  ~{validation.playersPerTeam}
-                  {validation.remainder > 0 && <span className="text-gray-400"> (+{validation.remainder})</span>}
+      <Modal isOpen={isOpen} onClose={onClose} title={t.teams.assignPlayers || "Assign Players"} size="lg">
+        <div className="space-y-4">
+          {/* Category Tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {categoryNames.map(name => (
+              <button
+                key={name}
+                onClick={() => setCurrentCategory(name)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
+                  currentCategory === name
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {name}
+                <span className="ml-2 px-1.5 py-0.5 rounded-full bg-white/20 text-xs">
+                  {assignments[name]?.length || 0}
                 </span>
-              </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Player Selection */}
+          {currentCategory ? (
+            <div className="border rounded-xl divide-y max-h-[45vh] overflow-y-auto">
+              {players.map(player => {
+                const isAssigned = assignments[currentCategory]?.includes(player.id);
+                const isAssignedElsewhere = !isAssigned && assignedPlayerIds.has(player.id);
+                const assignedTo = isAssignedElsewhere 
+                  ? categoryNames.find(cat => assignments[cat]?.includes(player.id))
+                  : null;
+
+                return (
+                  <button
+                    key={player.id}
+                    onClick={() => !isAssignedElsewhere && togglePlayer(player.id)}
+                    disabled={isAssignedElsewhere}
+                    className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
+                      isAssigned 
+                        ? 'bg-primary-50' 
+                        : isAssignedElsewhere 
+                          ? 'bg-gray-50 opacity-50 cursor-not-allowed'
+                          : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                      isAssigned 
+                        ? 'bg-primary-600 border-primary-600' 
+                        : 'border-gray-300'
+                    }`}>
+                      {isAssigned && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <Avatar name={player.user.name} imageUrl={player.user.avatarUrl} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate">{player.user.name}</p>
+                      {assignedTo && (
+                        <p className="text-xs text-gray-400">Already in {assignedTo}</p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-xl">
+              <Users className="w-10 h-10 text-gray-300 mb-2" />
+              <p className="text-gray-500">Select a category above to assign players</p>
+            </div>
+          )}
+
+          {/* Summary */}
+          <div className="bg-gray-50 rounded-xl p-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Assigned:</span>
+              <span className="font-medium">{assignedPlayerIds.size} / {players.length}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-amber-600 bg-amber-50 rounded-lg p-3 text-sm">
-            <AlertTriangle className="w-4 h-4" />
-            <span>{t.teams.warningDeleteExisting}</span>
-          </div>
-
-          <div className="flex gap-3 justify-between">
-            <Button variant="ghost" onClick={() => setMode('select')}>
+          {/* Actions */}
+          <div className="flex justify-between pt-2 border-t">
+            <Button variant="ghost" onClick={() => setStep('categories')}>
               <ChevronLeft className="w-4 h-4 mr-1" />
               {t.common.back}
             </Button>
-            <Button onClick={handleSubmit} loading={loading} disabled={!validation.isValid}>
-              <Shuffle className="w-4 h-4 mr-2" />
-              {t.teams.generateTeams}
+            <Button onClick={() => setStep('generate')}>
+              {t.common.next || "Next"}
+              <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </div>
@@ -2040,203 +2091,55 @@ function RandomTeamsModal({
     );
   }
 
-  // Categorized Random Screen - Card Based
+  // Step 3: Generate Teams
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t.teams.categorizedRandom} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t.teams.generateTeams || "Generate Teams"} size="md">
       <div className="space-y-4">
-        {/* Add Category */}
-        <div className="flex gap-2">
-          <Input
-            placeholder={t.categories.name + " (Captain, Batsman, Bowler...)"}
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addCategoryCard()}
-            className="flex-1"
-          />
-          <Button onClick={addCategoryCard} disabled={!newCategoryName.trim()}>
-            <Plus className="w-4 h-4 mr-1" />
-            {t.common.create}
-          </Button>
-        </div>
+        {/* Number of Teams */}
+        <Input
+          label={t.teams.numberOfTeams}
+          type="number"
+          value={numberOfTeams}
+          onChange={(e) => setNumberOfTeams(e.target.value)}
+          min="2"
+        />
 
-        {/* Category Cards */}
-        <div className="space-y-3 max-h-[50vh] overflow-y-auto">
-          {categoryCards.length === 0 ? (
-            <div className="text-center py-8 bg-gray-50 rounded-xl">
-              <Layers className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-              <p className="text-gray-500 text-sm">Create categories like Captain, Batsman, Bowler</p>
-              <p className="text-gray-400 text-xs mt-1">Then add players to each category</p>
+        {/* Distribution Preview */}
+        <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+          <h4 className="font-medium text-gray-900 text-sm">{t.teams.distributionPreview || "Distribution Preview"}</h4>
+          
+          {distributionInfo.categoryBreakdown.map(cat => (
+            <div key={cat.name} className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">{cat.name}</span>
+              <span className="font-medium">
+                {cat.count} players → ~{cat.perTeam} per team
+              </span>
             </div>
-          ) : (
-            categoryCards.map(card => (
-              <div key={card.id} className="border rounded-xl overflow-hidden bg-white">
-                {/* Card Header */}
-                <div className="bg-gray-50 p-3 flex items-center justify-between border-b">
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold text-gray-900">{card.name}</span>
-                    <Badge variant="info">{card.playerIds.length} {t.tournament.players}</Badge>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-sm">
-                      <span className="text-gray-500">{t.teams.perTeam}:</span>
-                      <input
-                        type="number"
-                        min="1"
-                        value={card.perTeam}
-                        onChange={(e) => updatePerTeam(card.id, parseInt(e.target.value) || 1)}
-                        className="w-12 text-center border rounded px-1 py-0.5"
-                      />
-                    </div>
-                    <button
-                      onClick={() => removeCategoryCard(card.id)}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+          ))}
 
-                {/* Players List */}
-                <div className="p-3">
-                  {showPlayerPickerFor === card.id ? (
-                    /* Player Picker */
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700">{t.teams.selectPlayers}</span>
-                        <button
-                          onClick={() => setShowPlayerPickerFor(null)}
-                          className="text-sm text-primary-600 hover:underline"
-                        >
-                          Done
-                        </button>
-                      </div>
-                      <div className="max-h-40 overflow-y-auto space-y-1 border rounded-lg p-2">
-                        {availablePlayers.length === 0 ? (
-                          <p className="text-sm text-gray-400 text-center py-2">All players assigned</p>
-                        ) : (
-                          availablePlayers.map(player => (
-                            <button
-                              key={player.id}
-                              onClick={() => addPlayerToCategory(card.id, player.id)}
-                              className="w-full flex items-center gap-2 p-2 hover:bg-gray-50 rounded text-left text-sm"
-                            >
-                              <Avatar name={player.user.name} size="sm" />
-                              <span className="flex-1">{player.user.name}</span>
-                              <Plus className="w-4 h-4 text-gray-400" />
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    /* Selected Players */
-                    <div className="space-y-2">
-                      {card.playerIds.length === 0 ? (
-                        <button
-                          onClick={() => setShowPlayerPickerFor(card.id)}
-                          className="w-full py-3 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 hover:border-primary-300 hover:text-primary-500 transition-colors text-sm"
-                        >
-                          <Plus className="w-4 h-4 inline mr-1" />
-                          {t.teams.addPlayers}
-                        </button>
-                      ) : (
-                        <>
-                          <div className="flex flex-wrap gap-2">
-                            {card.playerIds.map(playerId => {
-                              const player = players.find(p => p.id === playerId);
-                              if (!player) return null;
-                              return (
-                                <div
-                                  key={playerId}
-                                  className="flex items-center gap-1 bg-gray-100 rounded-full pl-1 pr-2 py-1"
-                                >
-                                  <Avatar name={player.user.name} size="sm" />
-                                  <span className="text-sm">{player.user.name}</span>
-                                  <button
-                                    onClick={() => removePlayerFromCategory(card.id, playerId)}
-                                    className="p-0.5 text-gray-400 hover:text-red-500 rounded-full"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <button
-                            onClick={() => setShowPlayerPickerFor(card.id)}
-                            className="text-sm text-primary-600 hover:underline"
-                          >
-                            + {t.teams.addPlayers}
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))
+          {distributionInfo.unassigned > 0 && (
+            <div className="flex items-center justify-between text-sm pt-2 border-t">
+              <span className="text-gray-500">Unassigned players</span>
+              <span className="text-gray-500">{distributionInfo.unassigned} (will be distributed randomly)</span>
+            </div>
           )}
         </div>
 
-        {/* Number of Teams & Summary */}
-        {categoryCards.length > 0 && (
-          <>
-            <div className="border-t pt-4">
-              <Input
-                label={t.teams.numberOfTeams}
-                type="number"
-                value={numberOfTeams}
-                onChange={(e) => setNumberOfTeams(e.target.value)}
-                min="2"
-              />
-            </div>
-
-            {/* Summary */}
-            <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">{t.tournament.players}:</span>
-                <span className="font-medium">{players.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">{t.teams.categoryAssignments}:</span>
-                <span className="font-medium">{assignedPlayerIds.size} assigned</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">{t.teams.remainingPlayers}:</span>
-                <span className="font-medium">{players.length - assignedPlayerIds.size} ({t.teams.willBeDistributed})</span>
-              </div>
-            </div>
-
-            {/* Validation Errors */}
-            {validation.issues.length > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-700 font-medium text-sm mb-1">{t.teams.validationError}</p>
-                <ul className="text-sm text-red-600 list-disc list-inside">
-                  {validation.issues.map((issue, i) => <li key={i}>{issue}</li>)}
-                </ul>
-              </div>
-            )}
-
-            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 rounded-lg p-3 text-sm">
-              <AlertTriangle className="w-4 h-4" />
-              <span>{t.teams.warningDeleteExisting}</span>
-            </div>
-          </>
-        )}
+        {/* Warning */}
+        <div className="flex items-center gap-2 text-amber-600 bg-amber-50 rounded-lg p-3 text-sm">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <span>{t.teams.warningDeleteExisting}</span>
+        </div>
 
         {/* Actions */}
-        <div className="flex gap-3 justify-between pt-2 border-t">
-          <Button variant="ghost" onClick={() => setMode('select')}>
+        <div className="flex justify-between pt-2 border-t">
+          <Button variant="ghost" onClick={() => setStep('assign')}>
             <ChevronLeft className="w-4 h-4 mr-1" />
             {t.common.back}
           </Button>
-          <Button
-            onClick={handleSubmit}
-            loading={loading}
-            disabled={categoryCards.length === 0 || !validation.isValid}
-          >
+          <Button onClick={handleSubmit} loading={loading}>
             <Shuffle className="w-4 h-4 mr-2" />
-            {t.teams.generateTeams}
+            {t.teams.randomShuffle || "Random Shuffle"}
           </Button>
         </div>
       </div>

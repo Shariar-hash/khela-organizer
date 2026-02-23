@@ -60,7 +60,7 @@ export default function TournamentsPage() {
   return (
     <div className="p-4 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
             {t.nav.tournaments}
@@ -69,16 +69,16 @@ export default function TournamentsPage() {
             {allTournaments.length} {t.nav.tournaments.toLowerCase()}
           </p>
         </div>
-        <div className="flex gap-3">
-          <Link href="/tournaments/join">
-            <Button variant="outline">
-              <Hash className="w-5 h-5 mr-2" />
+        <div className="flex gap-2 sm:gap-3">
+          <Link href="/tournaments/join" className="flex-1 sm:flex-none">
+            <Button variant="outline" className="w-full sm:w-auto text-sm sm:text-base px-3 sm:px-5">
+              <Hash className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
               {t.tournament.join}
             </Button>
           </Link>
-          <Link href="/tournaments/create">
-            <Button>
-              <Plus className="w-5 h-5 mr-2" />
+          <Link href="/tournaments/create" className="flex-1 sm:flex-none">
+            <Button className="w-full sm:w-auto text-sm sm:text-base px-3 sm:px-5">
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
               {t.tournament.create}
             </Button>
           </Link>

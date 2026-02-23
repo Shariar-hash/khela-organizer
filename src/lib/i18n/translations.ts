@@ -171,6 +171,9 @@ export const translations = {
       willBeDistributed: "will be distributed evenly",
       warningDeleteExisting: "Warning: This will delete all existing teams!",
       allPlayersAssigned: "All players are assigned to teams",
+      createCategories: "Create Categories",
+      categoriesHelp: "Create categories like Captain, Batsman, Bowler, etc. Players will be distributed evenly from each category.",
+      randomShuffle: "Random Shuffle",
     },
 
     // Players
@@ -441,6 +444,9 @@ export const translations = {
       willBeDistributed: "সমানভাবে বিতরণ করা হবে",
       warningDeleteExisting: "সতর্কতা: এটি বিদ্যমান সব দল মুছে ফেলবে!",
       allPlayersAssigned: "সব খেলোয়াড় দলে নিয়োগ করা হয়েছে",
+      createCategories: "বিভাগ তৈরি করুন",
+      categoriesHelp: "ক্যাপ্টেন, ব্যাটসম্যান, বোলার ইত্যাদি বিভাগ তৈরি করুন। খেলোয়াড়দের প্রতিটি বিভাগ থেকে সমানভাবে বিতরণ করা হবে।",
+      randomShuffle: "র‍্যান্ডম শাফল",
     },
 
     // Players
