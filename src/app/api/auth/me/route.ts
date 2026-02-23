@@ -37,19 +37,37 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name } = body;
+    const { name, phone } = body;
 
-    if (!name || name.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Name is required" },
-        { status: 400 }
-      );
+    // Build update object
+    const updateData: { name?: string; phone?: string; updatedAt: Date } = {
+      updatedAt: new Date(),
+    };
+
+    if (name !== undefined) {
+      if (!name || name.trim().length === 0) {
+        return NextResponse.json(
+          { error: "Name is required" },
+          { status: 400 }
+        );
+      }
+      updateData.name = name.trim();
     }
 
-    // Update user name
+    if (phone !== undefined) {
+      if (!phone || phone.trim().length === 0) {
+        return NextResponse.json(
+          { error: "Phone is required" },
+          { status: 400 }
+        );
+      }
+      updateData.phone = phone.trim();
+    }
+
+    // Update user
     await db
       .update(users)
-      .set({ name: name.trim(), updatedAt: new Date() })
+      .set(updateData)
       .where(eq(users.id, user.id));
 
     // Get updated user

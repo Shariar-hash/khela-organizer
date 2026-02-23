@@ -45,6 +45,7 @@ export default function ProfilePage() {
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function ProfilePage() {
   const startEditing = () => {
     if (user) {
       setEditName(user.name);
+      setEditPhone(user.phone);
       setIsEditing(true);
     }
   };
@@ -83,17 +85,21 @@ export default function ProfilePage() {
   const cancelEditing = () => {
     setIsEditing(false);
     setEditName("");
+    setEditPhone("");
   };
 
-  const saveName = async () => {
-    if (!editName.trim() || !user) return;
+  const saveProfile = async () => {
+    if (!editName.trim() || !editPhone.trim() || !user) return;
     
     setSaving(true);
     try {
       const res = await fetch("/api/auth/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName.trim() }),
+        body: JSON.stringify({ 
+          name: editName.trim(),
+          phone: editPhone.trim(),
+        }),
       });
       
       if (res.ok) {
@@ -101,9 +107,10 @@ export default function ProfilePage() {
         setUser(data.user);
         setIsEditing(false);
         setEditName("");
+        setEditPhone("");
       }
     } catch (error) {
-      console.error("Error updating name:", error);
+      console.error("Error updating profile:", error);
     } finally {
       setSaving(false);
     }
@@ -149,16 +156,22 @@ export default function ProfilePage() {
                   placeholder={t.players.yourName}
                   className="text-center"
                   autoFocus
+                />
+                <Input
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder={t.auth.phoneNumber}
+                  className="text-center"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") saveName();
+                    if (e.key === "Enter") saveProfile();
                     if (e.key === "Escape") cancelEditing();
                   }}
                 />
                 <div className="flex justify-center gap-2">
                   <Button
                     size="sm"
-                    onClick={saveName}
-                    disabled={saving || !editName.trim()}
+                    onClick={saveProfile}
+                    disabled={saving || !editName.trim() || !editPhone.trim()}
                   >
                     <Check className="w-4 h-4 mr-1" />
                     {t.common.save}
@@ -175,19 +188,20 @@ export default function ProfilePage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center gap-2">
-                <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
-                <button
-                  onClick={startEditing}
-                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                  title={t.profile.editProfile}
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-              </div>
+              <>
+                <div className="flex items-center justify-center gap-2">
+                  <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
+                  <button
+                    onClick={startEditing}
+                    className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                    title={t.profile.editProfile}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-gray-500 mb-4 mt-1">{user.phone}</p>
+              </>
             )}
-            
-            <p className="text-gray-500 mb-4 mt-1">{user.phone}</p>
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
               <Calendar className="w-4 h-4" />
               <span>
