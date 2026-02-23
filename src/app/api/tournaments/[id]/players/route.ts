@@ -68,7 +68,7 @@ export async function POST(
   }
 }
 
-// Update player (category by admin, or name by self or admin)
+// Update player (category by admin, or name/phone by self or admin)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -81,7 +81,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { playerId, category, name } = body;
+    const { playerId, category, name, phone } = body;
 
     // Check if user is admin
     const admin = await db
@@ -109,7 +109,7 @@ export async function PATCH(
     }
 
     // Check authorization:
-    // - Admin can update category and name
+    // - Admin can update category, name, and phone
     // - Player can only update their own name
     const isSelf = player[0].userId ? player[0].userId === user.id : false;
     
@@ -117,9 +117,12 @@ export async function PATCH(
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
-    // If not admin and trying to change category, deny
+    // If not admin and trying to change category or phone, deny
     if (!isAdmin && category !== undefined) {
       return NextResponse.json({ error: "Only admins can change category" }, { status: 403 });
+    }
+    if (!isAdmin && phone !== undefined) {
+      return NextResponse.json({ error: "Only admins can change phone" }, { status: 403 });
     }
 
     // Update player category if admin
@@ -143,6 +146,23 @@ export async function PATCH(
         await db
           .update(tournamentPlayers)
           .set({ name })
+          .where(eq(tournamentPlayers.id, playerId));
+      }
+    }
+
+    // Update phone - admin only, handle both regular and manual players
+    if (phone && isAdmin) {
+      if (player[0].userId) {
+        // Regular player - update users table
+        await db
+          .update(users)
+          .set({ phone, updatedAt: new Date() })
+          .where(eq(users.id, player[0].userId));
+      } else {
+        // Manual player - update tournamentPlayers table directly
+        await db
+          .update(tournamentPlayers)
+          .set({ phone })
           .where(eq(tournamentPlayers.id, playerId));
       }
     }

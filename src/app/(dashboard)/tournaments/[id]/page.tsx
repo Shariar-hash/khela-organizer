@@ -550,6 +550,7 @@ function PlayersTab({
 }) {
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
   
   // Add player state
   const [showAddPlayer, setShowAddPlayer] = useState(false);
@@ -601,16 +602,17 @@ function PlayersTab({
     }).catch(console.error);
   };
 
-  // Optimistic rename
-  const handleRenamePlayer = async (playerId: string) => {
+  // Optimistic update player (name and phone)
+  const handleUpdatePlayer = async (playerId: string) => {
     if (!editName.trim()) return;
     const newName = editName.trim();
+    const newPhone = editPhone.trim();
 
     // Optimistic update
     onUpdateData(prev => ({
       ...prev,
       players: prev.players.map(p => 
-        p.id === playerId ? { ...p, user: { ...p.user, name: newName } } : p
+        p.id === playerId ? { ...p, user: { ...p.user, name: newName, phone: newPhone || p.user.phone } } : p
       ),
       teams: prev.teams.map(team => ({
         ...team,
@@ -622,18 +624,25 @@ function PlayersTab({
 
     setEditingPlayer(null);
     setEditName("");
+    setEditPhone("");
 
-    // API call in background
+    // API call in background - include phone if admin is editing
+    const updatePayload: { playerId: string; name: string; phone?: string } = { playerId, name: newName };
+    if (data.isAdmin && newPhone) {
+      updatePayload.phone = newPhone;
+    }
+    
     fetch(`/api/tournaments/${data.tournament.id}/players`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playerId, name: newName }),
+      body: JSON.stringify(updatePayload),
     }).catch(console.error);
   };
 
-  const startEditing = (player: { id: string; user: { name: string } }) => {
+  const startEditing = (player: { id: string; user: { name: string; phone: string } }) => {
     setEditingPlayer(player.id);
     setEditName(player.user.name);
+    setEditPhone(player.user.phone || "");
   };
 
   // Add manual player handler
@@ -765,35 +774,48 @@ function PlayersTab({
                     />
                     <div className="flex-1 min-w-0">
                       {editingPlayer === player.id ? (
-                        <div className="flex items-center gap-2">
-                          <Input
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-32 sm:w-40"
-                            autoFocus
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") handleRenamePlayer(player.id);
-                              if (e.key === "Escape") {
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Input
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              placeholder={t.players.playerName}
+                              className="w-32 sm:w-40"
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleUpdatePlayer(player.id);
+                                if (e.key === "Escape") {
+                                  setEditingPlayer(null);
+                                  setEditName("");
+                                  setEditPhone("");
+                                }
+                              }}
+                            />
+                            <button
+                              onClick={() => handleUpdatePlayer(player.id)}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => {
                                 setEditingPlayer(null);
                                 setEditName("");
-                              }
-                            }}
-                          />
-                          <button
-                            onClick={() => handleRenamePlayer(player.id)}
-                            className="p-1 text-green-600 hover:bg-green-50 rounded"
-                          >
-                            ✓
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditingPlayer(null);
-                              setEditName("");
-                            }}
-                            className="p-1 text-gray-500 hover:bg-gray-100 rounded"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                                setEditPhone("");
+                              }}
+                              className="p-1 text-gray-500 hover:bg-gray-100 rounded"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          {data.isAdmin && (
+                            <Input
+                              value={editPhone}
+                              onChange={(e) => setEditPhone(e.target.value)}
+                              placeholder={t.players.playerPhone}
+                              className="w-32 sm:w-40"
+                            />
+                          )}
                         </div>
                       ) : (
                         <>
