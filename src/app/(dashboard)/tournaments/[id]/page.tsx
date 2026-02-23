@@ -2418,12 +2418,14 @@ function LogoGeneratorModal({
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [generatedLogo, setGeneratedLogo] = useState<{
-    logoSvg: string;
+    logoSvg?: string;
+    imageUrl?: string;
     description: string;
   } | null>(null);
 
   const handleGenerate = async () => {
     setLoading(true);
+    setGeneratedLogo(null);
 
     try {
       const res = await fetch("/api/generate-logo", {
@@ -2448,13 +2450,20 @@ function LogoGeneratorModal({
     setLoading(true);
 
     try {
-      // Convert SVG to data URL
-      const svgDataUrl = `data:image/svg+xml,${encodeURIComponent(generatedLogo.logoSvg)}`;
+      let logoUrl = "";
+      
+      if (generatedLogo.imageUrl) {
+        // Use AI-generated image directly
+        logoUrl = generatedLogo.imageUrl;
+      } else if (generatedLogo.logoSvg) {
+        // Convert SVG to data URL
+        logoUrl = `data:image/svg+xml,${encodeURIComponent(generatedLogo.logoSvg)}`;
+      }
 
       await fetch(`/api/tournaments/${tournamentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ logoUrl: svgDataUrl }),
+        body: JSON.stringify({ logoUrl }),
       });
 
       onSuccess();
@@ -2485,10 +2494,18 @@ function LogoGeneratorModal({
         {generatedLogo && (
           <div className="mt-6 space-y-4">
             <div className="flex justify-center">
-              <div
-                className="w-40 h-40"
-                dangerouslySetInnerHTML={{ __html: generatedLogo.logoSvg }}
-              />
+              {generatedLogo.imageUrl ? (
+                <img
+                  src={generatedLogo.imageUrl}
+                  alt="Generated Logo"
+                  className="w-48 h-48 object-contain rounded-xl border border-gray-200"
+                />
+              ) : generatedLogo.logoSvg ? (
+                <div
+                  className="w-40 h-40"
+                  dangerouslySetInnerHTML={{ __html: generatedLogo.logoSvg }}
+                />
+              ) : null}
             </div>
 
             <div className="p-4 bg-gray-50 rounded-xl">
