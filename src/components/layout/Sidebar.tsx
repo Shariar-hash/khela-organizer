@@ -125,7 +125,7 @@ export function Sidebar({ user }: SidebarProps) {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
               <Trophy className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900">TourneyPro</span>
+            <span className="text-lg font-bold text-gray-900">Khela Organizer</span>
           </Link>
           <button
             onClick={() => setIsOpen(!isOpen)}

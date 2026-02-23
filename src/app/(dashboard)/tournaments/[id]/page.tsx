@@ -734,7 +734,7 @@ function PlayersTab({
                       )}
                       
                       {/* Category dropdown - Show on mobile below name */}
-                      <div className="flex items-center gap-2 mt-2 sm:hidden">
+                      <div className="flex items-center gap-1.5 mt-2 sm:hidden">
                         {data.isAdmin && data.categories.length > 0 && (
                           <Select
                             options={[
@@ -743,7 +743,7 @@ function PlayersTab({
                             ]}
                             value={player.category || ""}
                             onChange={(value) => handleUpdateCategory(player.id, value)}
-                            className="flex-1 text-sm"
+                            className="w-28"
                           />
                         )}
                         {player.category && !data.isAdmin && (
@@ -752,7 +752,7 @@ function PlayersTab({
                         {data.isAdmin && !isCreator && (
                           <button
                             onClick={() => handleRemovePlayer(player.id)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

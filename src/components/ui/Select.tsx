@@ -31,7 +31,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             onChange={(e) => onChange?.(e.target.value)}
             className={cn(
-              "w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900",
+              "w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm sm:text-base",
               "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent",
               "transition-all duration-200 appearance-none",
               "disabled:bg-gray-50 disabled:text-gray-500",
