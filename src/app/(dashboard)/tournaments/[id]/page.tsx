@@ -243,77 +243,77 @@ export default function TournamentDashboardPage({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-4 py-2">
-              <Hash className="w-4 h-4 text-gray-500" />
-              <span className="font-mono font-semibold">{data.tournament.code}</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1 sm:gap-2 bg-gray-100 rounded-xl px-2 sm:px-4 py-2">
+              <Hash className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+              <span className="font-mono font-semibold text-sm sm:text-base">{data.tournament.code}</span>
               <button
                 onClick={copyCode}
                 className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
               >
-                <Copy className="w-4 h-4 text-gray-500" />
+                <Copy className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
               </button>
             </div>
             {copied && (
-              <span className="text-sm text-green-600">{t.common.copied}</span>
+              <span className="text-xs sm:text-sm text-green-600">{t.common.copied}</span>
             )}
           </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{data.players.length}</p>
-                <p className="text-sm text-gray-500">{t.tournament.players}</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.players.length}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.tournament.players}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent-100 flex items-center justify-center">
-                <Users className="w-5 h-5 text-accent-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-accent-100 flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-accent-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{data.teams.length}</p>
-                <p className="text-sm text-gray-500">{t.tournament.teams}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                <Bell className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{data.announcements.length}</p>
-                <p className="text-sm text-gray-500">{t.announcements.title}</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.teams.length}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.tournament.teams}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center">
-                <Crown className="w-5 h-5 text-yellow-600" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{data.admins.length}</p>
-                <p className="text-sm text-gray-500">{t.admin.title}</p>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.announcements.length}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.announcements.title}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.admins.length}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.admin.title}</p>
               </div>
             </div>
           </CardContent>

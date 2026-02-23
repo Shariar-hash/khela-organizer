@@ -86,20 +86,20 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 flex flex-col">
       {/* Header */}
-      <header className="p-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-            <Trophy className="w-6 h-6 text-white" />
+      <header className="p-4 flex justify-between items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center flex-shrink-0">
+            <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <span className="text-xl font-bold text-gray-900">Khela Organizer</span>
+          <span className="text-lg sm:text-xl font-bold text-gray-900 truncate">Khela Organizer</span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <Link
             href="/docs"
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors"
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-600 hover:text-primary-600 transition-colors"
           >
             <BookOpen className="w-4 h-4" />
-            {t.nav.docs}
+            <span className="hidden sm:inline">{t.nav.docs}</span>
           </Link>
           <LanguageToggle />
         </div>

@@ -77,18 +77,18 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-8">
         <Link href="/tournaments/create">
           <Card hover className="h-full">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-primary-100 flex items-center justify-center">
-                <Plus className="w-7 h-7 text-primary-600" />
+            <CardContent className="p-4 sm:p-6 flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <Plus className="w-6 h-6 sm:w-7 sm:h-7 text-primary-600" />
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                   {t.dashboard.createTournament}
                 </h3>
-                <p className="text-sm text-gray-500">{t.tournament.create}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.tournament.create}</p>
               </div>
             </CardContent>
           </Card>
@@ -96,15 +96,15 @@ export default function DashboardPage() {
 
         <Link href="/tournaments/join">
           <Card hover className="h-full">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-accent-100 flex items-center justify-center">
-                <Hash className="w-7 h-7 text-accent-600" />
+            <CardContent className="p-4 sm:p-6 flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-accent-100 flex items-center justify-center flex-shrink-0">
+                <Hash className="w-6 h-6 sm:w-7 sm:h-7 text-accent-600" />
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
                   {t.dashboard.joinTournament}
                 </h3>
-                <p className="text-sm text-gray-500">{t.tournament.joinWithCode}</p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{t.tournament.joinWithCode}</p>
               </div>
             </CardContent>
           </Card>
