@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,139 +19,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey.trim());
-    
-    // Use Imagen 3 for image generation
-    const imageModel = genAI.getGenerativeModel({ model: "imagen-3.0-generate-002" });
-    
+    // Build the prompt for logo generation
     const imagePrompt = prompt || 
       `Create a professional sports tournament logo for "${tournamentName || 'Tournament'}". 
-       Modern, clean design with bold colors. Cricket/sports themed. 
-       Simple iconic design suitable for a tournament badge.`;
+       Modern, clean design with bold colors. Sports themed.
+       Simple iconic design suitable for a tournament badge or team logo.
+       High quality, vector-style logo on transparent or solid background.`;
 
-    const imageResult = await imageModel.generateContent({
-      contents: [{
-        role: "user",
-        parts: [{ text: imagePrompt }]
-      }],
-      generationConfig: {
-        responseModalities: ["image", "text"],
-        responseMimeType: "image/png",
-      } as any,
-    });
+    // Use Imagen 3 via REST API
+    const imagenResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey.trim()}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          instances: [{ prompt: imagePrompt }],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: "1:1",
+            personGeneration: "dont_allow",
+            safetySetting: "block_medium_and_above",
+          },
+        }),
+      }
+    );
 
-    const response = imageResult.response;
-    
-    // Extract image data from response
-    let imageUrl = "";
-    let description = "";
-    
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        // Convert base64 to data URL
-        imageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-      }
-      if (part.text) {
-        description = part.text;
-      }
+    if (!imagenResponse.ok) {
+      const errorData = await imagenResponse.json().catch(() => ({}));
+      console.error("Imagen API error:", imagenResponse.status, errorData);
+      throw new Error(`Imagen API error: ${imagenResponse.status}`);
     }
 
-    if (!imageUrl) {
-      // Fallback to text model for description and generate SVG
-      const textModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const textResult = await textModel.generateContent(`
-        You are a logo designer. Describe a tournament logo concept for "${tournamentName || 'Tournament'}".
-        Keep it brief (2-3 sentences).
-      `);
-      description = textResult.response.text();
-      
-      const colors = generateColors(tournamentName || "Tournament");
-      const svgLogo = generateSVGLogo(tournamentName || "T", colors);
+    const imagenData = await imagenResponse.json();
+    
+    // Extract the generated image
+    const predictions = imagenData.predictions || [];
+    if (predictions.length > 0 && predictions[0].bytesBase64Encoded) {
+      const base64Image = predictions[0].bytesBase64Encoded;
+      const imageUrl = `data:image/png;base64,${base64Image}`;
       
       return NextResponse.json({
         success: true,
-        description,
-        logoSvg: svgLogo,
-        imageUrl: null,
-        colors,
+        description: `AI-generated logo for ${tournamentName || "Tournament"}`,
+        imageUrl,
+        logoSvg: null,
       });
     }
 
-    return NextResponse.json({
-      success: true,
-      description: description || `AI-generated logo for ${tournamentName}`,
-      imageUrl,
-      logoSvg: null,
-      colors: null,
-    });
+    throw new Error("No image generated");
   } catch (error: unknown) {
     console.error("Logo generation error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    
-    // Fallback to SVG on error
-    try {
-      const body = await request.clone().json();
-      const { tournamentName } = body;
-      const colors = generateColors(tournamentName || "Tournament");
-      const svgLogo = generateSVGLogo(tournamentName || "T", colors);
-      
-      return NextResponse.json({
-        success: true,
-        description: `Logo for ${tournamentName || "Tournament"}`,
-        logoSvg: svgLogo,
-        imageUrl: null,
-        colors,
-        fallback: true,
-      });
-    } catch {
-      return NextResponse.json(
-        { error: "Failed to generate logo", details: errorMessage },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(
+      { error: "Failed to generate logo", details: errorMessage },
+      { status: 500 }
+    );
   }
 }
 
-// Generate colors based on name
-function generateColors(name: string) {
-  const hash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  
-  const hue = hash % 360;
-  const saturation = 70 + (hash % 20);
-  const lightness = 45 + (hash % 15);
-  
-  return {
-    primary: hslToHex(hue, saturation, lightness),
-    secondary: hslToHex((hue + 30) % 360, saturation, lightness + 10),
-    accent: hslToHex((hue + 180) % 360, saturation - 10, lightness + 20),
-  };
-}
-
-function hslToHex(h: number, s: number, l: number): string {
-  l /= 100;
-  const a = s * Math.min(l, 1 - l) / 100;
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color).toString(16).padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
-}
-
-function generateSVGLogo(name: string, colors: { primary: string; secondary: string; accent: string }): string {
-  const initial = name.charAt(0).toUpperCase();
-  
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-    <defs>
-      <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style="stop-color:${colors.primary};stop-opacity:1" />
-        <stop offset="100%" style="stop-color:${colors.secondary};stop-opacity:1" />
-      </linearGradient>
-    </defs>
-    <circle cx="100" cy="100" r="90" fill="url(#grad1)" />
-    <circle cx="100" cy="100" r="75" fill="white" opacity="0.1" />
-    <text x="100" y="120" font-family="Arial, sans-serif" font-size="72" font-weight="bold" 
-          text-anchor="middle" fill="white">${initial}</text>
-    <circle cx="100" cy="100" r="88" fill="none" stroke="${colors.accent}" stroke-width="4" />
-  </svg>`;
-}

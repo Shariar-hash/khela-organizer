@@ -45,6 +45,7 @@ import {
   Check,
   AlertTriangle,
   Layers,
+  Download,
 } from "lucide-react";
 
 interface TournamentData {
@@ -414,6 +415,7 @@ export default function TournamentDashboardPage({
         onClose={() => setShowLogoGenerator(false)}
         tournamentId={id}
         tournamentName={data.tournament.name}
+        teams={data.teams}
         t={t}
         onSuccess={fetchTournament}
       />
@@ -2405,6 +2407,7 @@ function LogoGeneratorModal({
   onClose,
   tournamentId,
   tournamentName,
+  teams,
   t,
   onSuccess,
 }: {
@@ -2412,20 +2415,23 @@ function LogoGeneratorModal({
   onClose: () => void;
   tournamentId: string;
   tournamentName: string;
+  teams: Array<{ id: string; name: string }>;
   t: Translations;
   onSuccess: () => void;
 }) {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedTarget, setSelectedTarget] = useState<string>("tournament");
   const [generatedLogo, setGeneratedLogo] = useState<{
-    logoSvg?: string;
-    imageUrl?: string;
+    imageUrl: string;
     description: string;
   } | null>(null);
 
   const handleGenerate = async () => {
     setLoading(true);
     setGeneratedLogo(null);
+    setError(null);
 
     try {
       const res = await fetch("/api/generate-logo", {
@@ -2435,45 +2441,66 @@ function LogoGeneratorModal({
       });
 
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.imageUrl) {
         setGeneratedLogo(data);
+      } else {
+        setError(data.error || "Failed to generate logo");
       }
-    } catch (error) {
-      console.error("Error generating logo:", error);
+    } catch (err) {
+      console.error("Error generating logo:", err);
+      setError("Failed to generate logo. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!generatedLogo?.imageUrl) return;
+    
+    const link = document.createElement("a");
+    link.href = generatedLogo.imageUrl;
+    link.download = `logo-${tournamentName.replace(/\s+/g, "-").toLowerCase()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleUseLogo = async () => {
-    if (!generatedLogo) return;
+    if (!generatedLogo?.imageUrl) return;
     setLoading(true);
 
     try {
-      let logoUrl = "";
-      
-      if (generatedLogo.imageUrl) {
-        // Use AI-generated image directly
-        logoUrl = generatedLogo.imageUrl;
-      } else if (generatedLogo.logoSvg) {
-        // Convert SVG to data URL
-        logoUrl = `data:image/svg+xml,${encodeURIComponent(generatedLogo.logoSvg)}`;
+      if (selectedTarget === "tournament") {
+        await fetch(`/api/tournaments/${tournamentId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ logoUrl: generatedLogo.imageUrl }),
+        });
+      } else {
+        // Update team logo
+        await fetch(`/api/tournaments/${tournamentId}/teams`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ teamId: selectedTarget, logoUrl: generatedLogo.imageUrl }),
+        });
       }
-
-      await fetch(`/api/tournaments/${tournamentId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ logoUrl }),
-      });
 
       onSuccess();
       onClose();
-    } catch (error) {
-      console.error("Error updating logo:", error);
+    } catch (err) {
+      console.error("Error updating logo:", err);
     } finally {
       setLoading(false);
     }
   };
+
+  const targetOptions = [
+    { value: "tournament", label: t.tournament.name },
+    ...teams.map((team, index) => ({
+      value: team.id,
+      label: `${t.teams.title} ${index + 1}: ${team.name}`,
+    })),
+  ];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t.logo.title} size="lg">
@@ -2491,21 +2518,20 @@ function LogoGeneratorModal({
           {loading ? t.logo.generating : t.logo.generateLogo}
         </Button>
 
+        {error && (
+          <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm">
+            {error}
+          </div>
+        )}
+
         {generatedLogo && (
           <div className="mt-6 space-y-4">
             <div className="flex justify-center">
-              {generatedLogo.imageUrl ? (
-                <img
-                  src={generatedLogo.imageUrl}
-                  alt="Generated Logo"
-                  className="w-48 h-48 object-contain rounded-xl border border-gray-200"
-                />
-              ) : generatedLogo.logoSvg ? (
-                <div
-                  className="w-40 h-40"
-                  dangerouslySetInnerHTML={{ __html: generatedLogo.logoSvg }}
-                />
-              ) : null}
+              <img
+                src={generatedLogo.imageUrl}
+                alt="Generated Logo"
+                className="w-48 h-48 object-contain rounded-xl border border-gray-200 bg-white"
+              />
             </div>
 
             <div className="p-4 bg-gray-50 rounded-xl">
@@ -2513,6 +2539,20 @@ function LogoGeneratorModal({
                 {generatedLogo.description}
               </p>
             </div>
+
+            {/* Download Button */}
+            <Button variant="outline" onClick={handleDownload} className="w-full">
+              <Download className="w-4 h-4 mr-2" />
+              {t.logo.download}
+            </Button>
+
+            {/* Target Selection */}
+            <Select
+              label={t.logo.useFor}
+              value={selectedTarget}
+              onChange={(value) => setSelectedTarget(value)}
+              options={targetOptions}
+            />
 
             <div className="flex gap-3">
               <Button variant="outline" onClick={handleGenerate} className="flex-1">

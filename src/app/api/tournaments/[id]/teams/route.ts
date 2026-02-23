@@ -87,13 +87,14 @@ export async function PATCH(
       return NextResponse.json({ success: true, action: "playerRemoved" });
     }
 
-    // Update team name/color
-    if (name || color) {
+    // Update team name/color/logo
+    if (name || color || body.logoUrl !== undefined) {
       const updatedTeam = await db
         .update(teams)
         .set({
           ...(name && { name }),
           ...(color && { color }),
+          ...(body.logoUrl !== undefined && { logoUrl: body.logoUrl }),
           updatedAt: new Date(),
         })
         .where(eq(teams.id, teamId))

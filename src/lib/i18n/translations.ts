@@ -239,9 +239,11 @@ export const translations = {
       promptPlaceholder: "e.g., A cricket tournament logo with golden trophy",
       generating: "Generating logo...",
       generated: "Logo generated!",
-      useAsLogo: "Use as Tournament Logo",
+      useAsLogo: "Use as Logo",
       regenerate: "Regenerate",
       autoGenerate: "Generate from tournament name",
+      download: "Download Logo",
+      useFor: "Use as logo for",
     },
 
     // Profile
@@ -519,9 +521,11 @@ export const translations = {
       promptPlaceholder: "যেমন: সোনালী ট্রফি সহ একটি ক্রিকেট টুর্নামেন্ট লোগো",
       generating: "লোগো তৈরি হচ্ছে...",
       generated: "লোগো তৈরি হয়েছে!",
-      useAsLogo: "টুর্নামেন্ট লোগো হিসেবে ব্যবহার করুন",
+      useAsLogo: "লোগো হিসেবে ব্যবহার করুন",
       regenerate: "আবার তৈরি করুন",
       autoGenerate: "টুর্নামেন্টের নাম থেকে তৈরি করুন",
+      download: "লোগো ডাউনলোড করুন",
+      useFor: "লোগো হিসেবে ব্যবহার করুন",
     },
 
     // Profile
