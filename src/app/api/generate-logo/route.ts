@@ -12,46 +12,33 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { prompt, tournamentName } = body;
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "Gemini API key not configured" },
-        { status: 500 }
-      );
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey.trim());
-
-    // Generate a prompt for logo description
-    const finalPrompt = prompt || 
-      `Create a professional sports tournament logo design description for "${tournamentName}". 
-       Include colors, shapes, and sports elements. Make it modern and clean.`;
-
-    // Use text model to generate logo description/concept
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
-    const result = await model.generateContent(`
-      You are a professional logo designer. Generate a detailed description for a tournament logo.
-      
-      Requirements:
-      - Tournament Name: ${tournamentName || "Tournament"}
-      - User's additional request: ${prompt || "None"}
-      
-      Provide:
-      1. Logo concept description
-      2. Suggested colors (hex codes)
-      3. Key visual elements
-      4. Typography suggestions
-      
-      Keep the description concise but detailed enough for a designer to recreate.
-    `);
-
-    const response = result.response;
-    const logoDescription = response.text();
-
     // Generate a placeholder SVG logo based on the tournament name
     const colors = generateColors(tournamentName || "Tournament");
     const svgLogo = generateSVGLogo(tournamentName || "T", colors);
+
+    let logoDescription = `A professional logo for ${tournamentName || "Tournament"} featuring modern gradient colors and bold typography.`;
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey && apiKey.trim()) {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey.trim());
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        const result = await model.generateContent(`
+          You are a professional logo designer. Generate a brief description for a tournament logo.
+          
+          Tournament Name: ${tournamentName || "Tournament"}
+          User's request: ${prompt || "A modern sports tournament logo"}
+          
+          Provide a 2-3 sentence description of the logo concept with color suggestions.
+        `);
+
+        const response = result.response;
+        logoDescription = response.text();
+      } catch (aiError) {
+        console.error("AI generation failed, using fallback:", aiError);
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -59,10 +46,11 @@ export async function POST(request: NextRequest) {
       logoSvg: svgLogo,
       colors,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Logo generation error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to generate logo" },
+      { error: "Failed to generate logo", details: errorMessage },
       { status: 500 }
     );
   }
