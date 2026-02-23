@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: "your-google-verification-code",
+    google: "bZ8hQ6Qk74nXxd10x1bmvC0-X4BHjUMZL87U68wSRm0",
   },
   category: "Sports & Recreation",
   icons: {
