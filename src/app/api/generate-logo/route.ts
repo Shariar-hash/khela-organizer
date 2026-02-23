@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey.trim());
 
     // Generate a prompt for logo description
     const finalPrompt = prompt || 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
        Include colors, shapes, and sports elements. Make it modern and clean.`;
 
     // Use text model to generate logo description/concept
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const result = await model.generateContent(`
       You are a professional logo designer. Generate a detailed description for a tournament logo.
