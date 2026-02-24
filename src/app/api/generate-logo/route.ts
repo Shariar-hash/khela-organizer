@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { HfInference } from "@huggingface/inference";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,56 +12,45 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { prompt, tournamentName } = body;
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.HUGGINGFACE_API_KEY;
     if (!apiKey || !apiKey.trim()) {
+      console.error("Hugging Face API key missing");
       return NextResponse.json(
-        { error: "Gemini API key not configured" },
+        { error: "Hugging Face API key not configured" },
         { status: 500 }
       );
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey.trim());
-    
-    // Use Gemini 2.0 Flash with image generation capability
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash-exp-image-generation",
-      generationConfig: {
-        responseModalities: ["TEXT", "IMAGE"],
-      } as any,
-    });
-
     // Build the prompt for logo generation
     const imagePrompt = prompt || 
-      `Create a professional sports tournament logo for "${tournamentName || 'Tournament'}". 
-       Modern, clean design with bold colors. Sports themed.
-       Simple iconic design suitable for a tournament badge or team logo.
-       High quality logo on a clean background.`;
+      `Professional sports tournament logo for "${tournamentName || 'Tournament'}", modern clean design, bold colors, sports themed, simple iconic design, tournament badge, high quality logo, clean background, vector style`;
 
-    const result = await model.generateContent(imagePrompt);
-    const response = result.response;
-    
-    // Extract image and text from response
-    let imageUrl = "";
-    let description = "";
-    
-    const parts = response.candidates?.[0]?.content?.parts || [];
-    for (const part of parts) {
-      if ((part as any).inlineData) {
-        const inlineData = (part as any).inlineData;
-        imageUrl = `data:${inlineData.mimeType};base64,${inlineData.data}`;
-      }
-      if ((part as any).text) {
-        description = (part as any).text;
-      }
-    }
+    console.log("Generating logo with prompt:", imagePrompt.substring(0, 100) + "...");
 
-    if (!imageUrl) {
-      throw new Error("No image generated");
-    }
+    // Initialize the Hugging Face client
+    const hf = new HfInference(apiKey.trim());
+
+    // Generate the image using text-to-image
+    const image = await hf.textToImage({
+      model: "stabilityai/stable-diffusion-xl-base-1.0",
+      inputs: imagePrompt,
+      parameters: {
+        negative_prompt: "blurry, bad quality, distorted, ugly, text, watermark",
+      },
+    });
+
+    console.log("Image generated, converting to base64...");
+
+    // Convert Blob to base64
+    const arrayBuffer = await image.arrayBuffer();
+    const base64Image = Buffer.from(arrayBuffer).toString("base64");
+    const imageUrl = `data:image/png;base64,${base64Image}`;
+
+    console.log("Logo generated successfully, size:", arrayBuffer.byteLength);
 
     return NextResponse.json({
       success: true,
-      description: description || `AI-generated logo for ${tournamentName || "Tournament"}`,
+      description: `AI-generated logo for ${tournamentName || "Tournament"}`,
       imageUrl,
     });
   } catch (error: unknown) {
