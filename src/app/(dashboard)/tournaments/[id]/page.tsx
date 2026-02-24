@@ -78,6 +78,7 @@ interface TournamentData {
     id: string;
     name: string;
     color?: string;
+    logoUrl?: string;
     members: Array<{
       member: { id: string; role?: string };
       player: { id: string; category?: string };
@@ -508,7 +509,16 @@ function OverviewTab({ data, t }: { data: TournamentData; t: Translations }) {
                   className="p-4 rounded-xl border border-gray-100"
                   style={{ borderLeftColor: team.color, borderLeftWidth: 4 }}
                 >
-                  <h4 className="font-semibold mb-2">{team.name}</h4>
+                  <div className="flex items-center gap-2 mb-2">
+                    {team.logoUrl && (
+                      <img 
+                        src={team.logoUrl} 
+                        alt={team.name} 
+                        className="w-8 h-8 rounded-lg object-cover"
+                      />
+                    )}
+                    <h4 className="font-semibold">{team.name}</h4>
+                  </div>
                   <div className="flex -space-x-2">
                     {team.members.slice(0, 5).map((member) => (
                       <Avatar
@@ -1158,7 +1168,16 @@ function TeamsTab({
                     </div>
                   ) : (
                     <>
-                      <span>{team.name}</span>
+                      <div className="flex items-center gap-2">
+                        {team.logoUrl && (
+                          <img 
+                            src={team.logoUrl} 
+                            alt={team.name} 
+                            className="w-8 h-8 rounded-lg object-cover"
+                          />
+                        )}
+                        <span>{team.name}</span>
+                      </div>
                       <div className="flex items-center gap-2">
                         <Badge>{team.members.length} {t.tournament.players}</Badge>
                         {data.isAdmin && (

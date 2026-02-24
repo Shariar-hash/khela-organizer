@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const hf = new HfInference(apiKey.trim());
 
     // Generate the image using text-to-image
-    const image = await hf.textToImage({
+    const response = await hf.textToImage({
       model: "stabilityai/stable-diffusion-xl-base-1.0",
       inputs: imagePrompt,
       parameters: {
@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
 
     console.log("Image generated, converting to base64...");
 
-    // Convert Blob to base64
+    // The response is actually a Blob at runtime, cast it
+    const image = response as unknown as Blob;
     const arrayBuffer = await image.arrayBuffer();
     const base64Image = Buffer.from(arrayBuffer).toString("base64");
     const imageUrl = `data:image/png;base64,${base64Image}`;
