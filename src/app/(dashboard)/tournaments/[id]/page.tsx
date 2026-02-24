@@ -47,6 +47,7 @@ import {
   AlertTriangle,
   Layers,
   Download,
+  Upload,
 } from "lucide-react";
 
 interface TournamentData {
@@ -127,7 +128,7 @@ export default function TournamentDashboardPage({
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [showRandomTeams, setShowRandomTeams] = useState(false);
   const [showCreateAnnouncement, setShowCreateAnnouncement] = useState(false);
-  const [showLogoGenerator, setShowLogoGenerator] = useState(false);
+  const [showLogoGenerator, setShowLogoGenerator] = useState<string | boolean>(false); // false, true (tournament), or teamId
 
   const fetchTournament = useCallback(async () => {
     try {
@@ -350,6 +351,7 @@ export default function TournamentDashboardPage({
           onCreateTeam={() => setShowCreateTeam(true)}
           onRandomTeams={() => setShowRandomTeams(true)}
           onRefresh={fetchTournament}
+          onGenerateLogo={(teamId) => setShowLogoGenerator(teamId || true)}
         />
       )}
 
@@ -413,11 +415,12 @@ export default function TournamentDashboardPage({
       />
 
       <LogoGeneratorModal
-        isOpen={showLogoGenerator}
+        isOpen={!!showLogoGenerator}
         onClose={() => setShowLogoGenerator(false)}
         tournamentId={id}
         tournamentName={data.tournament.name}
         teams={data.teams}
+        preselectedTarget={typeof showLogoGenerator === "string" ? showLogoGenerator : undefined}
         t={t}
         onSuccess={fetchTournament}
       />
@@ -958,12 +961,14 @@ function TeamsTab({
   onCreateTeam,
   onRandomTeams,
   onRefresh,
+  onGenerateLogo,
 }: {
   data: TournamentData;
   t: Translations;
   onCreateTeam: () => void;
   onRandomTeams: () => void;
   onRefresh: () => void;
+  onGenerateLogo: (teamId?: string) => void;
 }) {
   const [editingTeam, setEditingTeam] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -971,6 +976,7 @@ function TeamsTab({
   const [managingTeam, setManagingTeam] = useState<string | null>(null);
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
   const [editPlayerName, setEditPlayerName] = useState("");
+  const [showLogoOptions, setShowLogoOptions] = useState<string | null>(null);
   
   // Local state for optimistic updates
   const [localTeams, setLocalTeams] = useState(data.teams);
@@ -1101,6 +1107,42 @@ function TeamsTab({
     setEditName(team.name);
   };
 
+  // Handle team logo upload
+  const handleTeamLogoUpload = async (teamId: string, file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+      // Optimistic update
+      setLocalTeams(prev => prev.map(team =>
+        team.id === teamId ? { ...team, logoUrl: base64 } : team
+      ));
+      setShowLogoOptions(null);
+      // API call
+      await fetch(`/api/tournaments/${data.tournament.id}/teams`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamId, logoUrl: base64 }),
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle team logo removal
+  const handleRemoveTeamLogo = async (teamId: string) => {
+    if (!confirm(t.logo.confirmRemove)) return;
+    // Optimistic update
+    setLocalTeams(prev => prev.map(team =>
+      team.id === teamId ? { ...team, logoUrl: undefined } : team
+    ));
+    setShowLogoOptions(null);
+    // API call
+    await fetch(`/api/tournaments/${data.tournament.id}/teams`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teamId, logoUrl: null }),
+    });
+  };
+
   return (
     <div className="space-y-6">
       {data.isAdmin && (
@@ -1172,14 +1214,69 @@ function TeamsTab({
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-center gap-2">
-                        {team.logoUrl && (
+                      <div className="flex items-center gap-2 relative">
+                        {data.isAdmin ? (
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowLogoOptions(showLogoOptions === team.id ? null : team.id)}
+                              className="w-10 h-10 rounded-lg border-2 border-dashed border-gray-300 hover:border-primary-400 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors"
+                              title={t.logo.manageLogo}
+                            >
+                              {team.logoUrl ? (
+                                <img 
+                                  src={team.logoUrl} 
+                                  alt={team.name} 
+                                  className="w-full h-full rounded-lg object-cover"
+                                />
+                              ) : (
+                                <ImageIcon className="w-5 h-5 text-gray-400" />
+                              )}
+                            </button>
+                            {/* Logo Options Dropdown */}
+                            {showLogoOptions === team.id && (
+                              <div className="absolute top-12 left-0 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-2 min-w-[180px]">
+                                <button
+                                  onClick={() => {
+                                    setShowLogoOptions(null);
+                                    onGenerateLogo(team.id);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded-lg text-left"
+                                >
+                                  <Sparkles className="w-4 h-4 text-primary-500" />
+                                  {t.logo.generateWithAI}
+                                </button>
+                                <label className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded-lg cursor-pointer">
+                                  <Upload className="w-4 h-4 text-gray-500" />
+                                  {t.logo.uploadLogo}
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) handleTeamLogoUpload(team.id, file);
+                                    }}
+                                  />
+                                </label>
+                                {team.logoUrl && (
+                                  <button
+                                    onClick={() => handleRemoveTeamLogo(team.id)}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 rounded-lg text-left text-red-500"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                    {t.logo.removeLogo}
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ) : team.logoUrl ? (
                           <img 
                             src={team.logoUrl} 
                             alt={team.name} 
                             className="w-8 h-8 rounded-lg object-cover"
                           />
-                        )}
+                        ) : null}
                         <span>{team.name}</span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1613,11 +1710,77 @@ function SettingsTab({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
+          {/* Current Logo Preview */}
+          {data.tournament.logoUrl && (
+            <div className="mb-4 flex items-center gap-4">
+              <img
+                src={data.tournament.logoUrl}
+                alt="Tournament Logo"
+                className="w-20 h-20 rounded-xl object-cover border border-gray-200"
+              />
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-gray-500">{t.logo.currentLogo}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    if (!confirm(t.logo.confirmRemove)) return;
+                    onUpdateData(prev => ({
+                      ...prev,
+                      tournament: { ...prev.tournament, logoUrl: undefined },
+                    }));
+                    await fetch(`/api/tournaments/${data.tournament.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ logoUrl: null }),
+                    });
+                  }}
+                  className="text-red-500 hover:bg-red-50"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  {t.logo.removeLogo}
+                </Button>
+              </div>
+            </div>
+          )}
+
           <p className="text-gray-600 mb-4">{t.logo.enterPrompt}</p>
-          <Button onClick={onGenerateLogo}>
-            <Sparkles className="w-5 h-5 mr-2" />
-            {t.logo.generateLogo}
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={onGenerateLogo}>
+              <Sparkles className="w-5 h-5 mr-2" />
+              {t.logo.generateLogo}
+            </Button>
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  
+                  const reader = new FileReader();
+                  reader.onload = async (event) => {
+                    const base64 = event.target?.result as string;
+                    onUpdateData(prev => ({
+                      ...prev,
+                      tournament: { ...prev.tournament, logoUrl: base64 },
+                    }));
+                    await fetch(`/api/tournaments/${data.tournament.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ logoUrl: base64 }),
+                    });
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+              <span className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                <Upload className="w-5 h-5 mr-2" />
+                {t.logo.uploadLogo}
+              </span>
+            </label>
+          </div>
         </CardContent>
       </Card>
 
@@ -2447,6 +2610,7 @@ function LogoGeneratorModal({
   tournamentId,
   tournamentName,
   teams,
+  preselectedTarget,
   t,
   onSuccess,
 }: {
@@ -2455,17 +2619,25 @@ function LogoGeneratorModal({
   tournamentId: string;
   tournamentName: string;
   teams: Array<{ id: string; name: string }>;
+  preselectedTarget?: string;
   t: Translations;
   onSuccess: () => void;
 }) {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedTarget, setSelectedTarget] = useState<string>("tournament");
+  const [selectedTarget, setSelectedTarget] = useState<string>(preselectedTarget || "tournament");
   const [generatedLogo, setGeneratedLogo] = useState<{
     imageUrl: string;
     description: string;
   } | null>(null);
+
+  // Reset selectedTarget when preselectedTarget changes
+  useEffect(() => {
+    if (preselectedTarget) {
+      setSelectedTarget(preselectedTarget);
+    }
+  }, [preselectedTarget]);
 
   const handleGenerate = async () => {
     setLoading(true);

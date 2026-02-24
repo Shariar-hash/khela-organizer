@@ -245,6 +245,12 @@ export const translations = {
       autoGenerate: "Generate from tournament name",
       download: "Download Logo",
       useFor: "Use as logo for",
+      uploadLogo: "Upload Logo",
+      removeLogo: "Remove Logo",
+      currentLogo: "Current Logo",
+      confirmRemove: "Are you sure you want to remove this logo?",
+      manageLogo: "Click to manage logo",
+      generateWithAI: "Generate with AI",
     },
 
     // Profile
@@ -528,6 +534,12 @@ export const translations = {
       autoGenerate: "টুর্নামেন্টের নাম থেকে তৈরি করুন",
       download: "লোগো ডাউনলোড করুন",
       useFor: "লোগো হিসেবে ব্যবহার করুন",
+      uploadLogo: "লোগো আপলোড করুন",
+      removeLogo: "লোগো সরান",
+      currentLogo: "বর্তমান লোগো",
+      confirmRemove: "আপনি কি এই লোগো সরাতে চান?",
+      manageLogo: "লোগো পরিচালনা করতে ক্লিক করুন",
+      generateWithAI: "AI দিয়ে তৈরি করুন",
     },
 
     // Profile
