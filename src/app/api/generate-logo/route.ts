@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.HUGGINGFACE_API_KEY;
     if (!apiKey || !apiKey.trim()) {
-      console.error("Hugging Face API key missing");
+      console.error("Hugging Face API key missing - add HUGGINGFACE_API_KEY to environment variables");
       return NextResponse.json(
-        { error: "Hugging Face API key not configured" },
+        { error: "Logo generation not configured. Add HUGGINGFACE_API_KEY in Vercel settings." },
         { status: 500 }
       );
     }

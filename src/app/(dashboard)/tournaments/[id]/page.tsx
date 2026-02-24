@@ -686,8 +686,12 @@ function PlayersTab({
         setNewPlayerName("");
         setNewPlayerPhone("");
         setShowAddPlayer(false);
-      } else if (result.error === "duplicate_player") {
-        setToastMessage(t.players.duplicatePlayer);
+      } else if (res.status === 409 || result.error === "duplicate_player") {
+        // Show duplicate player error
+        setToastMessage(t.players.duplicatePlayer || "A player with this name already exists");
+      } else {
+        // Show generic error
+        setToastMessage(result.error || "Failed to add player");
       }
     } catch (error) {
       console.error("Error adding player:", error);
