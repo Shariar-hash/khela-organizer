@@ -38,6 +38,25 @@ export async function POST(
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
+    // Check for duplicate player name
+    const existingPlayer = await db
+      .select()
+      .from(tournamentPlayers)
+      .where(
+        and(
+          eq(tournamentPlayers.tournamentId, id),
+          eq(tournamentPlayers.name, name.trim())
+        )
+      )
+      .limit(1);
+
+    if (existingPlayer.length > 0) {
+      return NextResponse.json(
+        { error: "duplicate_player", message: "A player with this name already exists" },
+        { status: 409 }
+      );
+    }
+
     // Create manual player (no userId)
     const newPlayer = await db
       .insert(tournamentPlayers)

@@ -18,6 +18,7 @@ import {
   Loader,
   Select,
   Textarea,
+  Toast,
 } from "@/components/ui";
 import {
   Trophy,
@@ -559,6 +560,7 @@ function PlayersTab({
   const [newPlayerName, setNewPlayerName] = useState("");
   const [newPlayerPhone, setNewPlayerPhone] = useState("");
   const [addingPlayer, setAddingPlayer] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Optimistic remove player
   const handleRemovePlayer = async (playerId: string) => {
@@ -662,8 +664,9 @@ function PlayersTab({
         }),
       });
       
+      const result = await res.json();
+      
       if (res.ok) {
-        const result = await res.json();
         // Add new player to data
         onUpdateData(prev => ({
           ...prev,
@@ -673,6 +676,8 @@ function PlayersTab({
         setNewPlayerName("");
         setNewPlayerPhone("");
         setShowAddPlayer(false);
+      } else if (result.error === "duplicate_player") {
+        setToastMessage(t.players.duplicatePlayer);
       }
     } catch (error) {
       console.error("Error adding player:", error);
@@ -917,6 +922,17 @@ function PlayersTab({
           </div>
         </CardContent>
       </Card>
+
+      {/* Toast notification for duplicate player */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 z-50">
+          <Toast
+            message={toastMessage}
+            type="error"
+            onClose={() => setToastMessage(null)}
+          />
+        </div>
+      )}
     </div>
   );
 }
