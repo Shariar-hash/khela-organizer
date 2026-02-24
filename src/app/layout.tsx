@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Montasir Mogumder Shariar", url: "https://montasir-mogumder-shariar.vercel.app/" }],
   creator: "Montasir Mogumder Shariar",
   publisher: "Khela Organizer",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://khela-organizer.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://khela-organizer-113b.vercel.app"),
   alternates: {
     canonical: "/",
     languages: {
