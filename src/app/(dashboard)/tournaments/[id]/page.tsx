@@ -1234,20 +1234,20 @@ function TeamsTab({
                             </button>
                             {/* Logo Options Dropdown */}
                             {showLogoOptions === team.id && (
-                              <div className="absolute top-12 left-0 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-2 min-w-[180px]">
+                              <div className="absolute top-12 left-0 z-50 bg-white rounded-xl shadow-lg border border-gray-200 p-2 min-w-[220px]">
                                 <button
                                   onClick={() => {
                                     setShowLogoOptions(null);
                                     onGenerateLogo(team.id);
                                   }}
-                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded-lg text-left"
+                                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg text-left"
                                 >
-                                  <Sparkles className="w-4 h-4 text-primary-500" />
-                                  {t.logo.generateWithAI}
+                                  <Sparkles className="w-4 h-4 text-primary-500 flex-shrink-0" />
+                                  <span>{t.logo.generateWithAI}</span>
                                 </button>
-                                <label className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded-lg cursor-pointer">
-                                  <Upload className="w-4 h-4 text-gray-500" />
-                                  {t.logo.uploadLogo}
+                                <label className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                  <Upload className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                                  <span>{t.logo.uploadLogo}</span>
                                   <input
                                     type="file"
                                     accept="image/*"
@@ -1261,10 +1261,10 @@ function TeamsTab({
                                 {team.logoUrl && (
                                   <button
                                     onClick={() => handleRemoveTeamLogo(team.id)}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 rounded-lg text-left text-red-500"
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-red-50 rounded-lg text-left text-red-500"
                                   >
-                                    <Trash2 className="w-4 h-4" />
-                                    {t.logo.removeLogo}
+                                    <Trash2 className="w-4 h-4 flex-shrink-0" />
+                                    <span>{t.logo.removeLogo}</span>
                                   </button>
                                 )}
                               </div>
