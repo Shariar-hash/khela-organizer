@@ -41,10 +41,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://khela-organizer-113b.vercel.app"),
   alternates: {
     canonical: "/",
-    languages: {
-      "en": "/en",
-      "bn": "/bn",
-    },
   },
   openGraph: {
     type: "website",
@@ -102,13 +98,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteUrl = "https://khela-organizer-113b.vercel.app";
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "Khela Organizer",
-    "alternateName": "খেলা অর্গানাইজার",
-    "description": "Free tournament management platform for cricket and sports. Create tournaments, manage teams and players.",
-    "url": "https://khela-organizer.vercel.app",
+    "alternateName": ["খেলা অর্গানাইজার", "Khela Organiser"],
+    "description": "Free tournament management platform for cricket and sports. Create tournaments, manage teams, distribute players into balanced teams, and post announcements. Works in English and Bangla.",
+    "url": siteUrl,
     "applicationCategory": "SportsApplication",
     "operatingSystem": "Web",
     "offers": {
@@ -121,7 +119,26 @@ export default function RootLayout({
       "name": "Montasir Mogumder Shariar",
       "url": "https://montasir-mogumder-shariar.vercel.app/"
     },
-    "inLanguage": ["en", "bn"]
+    "inLanguage": ["en", "bn"],
+    "featureList": [
+      "Create cricket tournaments",
+      "Random team distribution",
+      "Player category management",
+      "AI logo generation",
+      "Tournament announcements",
+      "Bilingual support (English & Bangla)"
+    ],
+    "keywords": "khela organizer, খেলা অর্গানাইজার, tournament management, cricket tournament app, team generator, bangladesh cricket"
+  };
+
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Khela Organizer",
+    "alternateName": "খেলা অর্গানাইজার",
+    "url": siteUrl,
+    "logo": `${siteUrl}/android-chrome-192x192.png`,
+    "sameAs": []
   };
 
   return (
@@ -130,6 +147,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
       </head>
       <body className="font-sans">{children}</body>

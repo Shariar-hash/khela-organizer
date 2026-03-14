@@ -3,12 +3,12 @@
 
 User-agent: *
 Allow: /
+Allow: /login
+Allow: /docs
 
 # Sitemaps
 Sitemap: https://khela-organizer-113b.vercel.app/sitemap.xml
 
-# Disallow API routes and authenticated pages
+# Disallow API routes and private pages
 Disallow: /api/
 Disallow: /dashboard
-Disallow: /profile
-Disallow: /tournaments
